@@ -65,11 +65,44 @@ gh label create priority-medium   --color FBCA04 --description "Important, not g
 gh label create priority-low      --color C2E0C6 --description "Nice-to-have / polish"
 
 # Milestones (native GitHub milestone objects, not labels)
+# Note: state must be lowercase ("open"/"closed")
 gh api repos/:owner/:repo/milestones -f title="Milestone 1" -f state="open"
 gh api repos/:owner/:repo/milestones -f title="Milestone 2" -f state="open"
 gh api repos/:owner/:repo/milestones -f title="Milestone 3" -f state="open"
 gh api repos/:owner/:repo/milestones -f title="Milestone 4" -f state="open"
 ```
+
+## Two-tier branch setup (main = deployment, staging = integration/testing)
+
+```bash
+# Create the staging branch from main
+git checkout main
+git pull origin main
+git checkout -b staging
+git push -u origin staging
+
+# Make staging the default branch new PRs target
+gh api repos/:owner/:repo -X PATCH -f default_branch="staging"
+
+# Protect main: require 2 reviews, no direct pushes, no self-approval
+gh api repos/:owner/:repo/branches/main/protection -X PUT \
+  -f required_pull_request_reviews[required_approving_review_count]=2 \
+  -F enforce_admins=true \
+  -f restrictions=null
+
+# Protect staging the same way
+gh api repos/:owner/:repo/branches/staging/protection -X PUT \
+  -f required_pull_request_reviews[required_approving_review_count]=2 \
+  -F enforce_admins=true \
+  -f restrictions=null
+```
+
+> Branch protection via `gh api` can be fiddly depending on your plan/repo
+> visibility — if these commands 404 or reject fields, set it up instead via
+> **Settings → Branches → Add branch protection rule** in the GitHub web UI
+> for both `main` and `staging`, ticking "Require a pull request before
+> merging", "Require approvals" (2), and "Do not allow bypassing the above
+> settings".
 
 Replace `:owner/:repo` with your actual `org/repo-name`, or run the commands
 from inside the cloned repo where `gh` can infer it automatically.
