@@ -6,12 +6,25 @@ needs a human to decide the correct result. It is a normal part of team
 work, not a mistake — stay calm, work through it methodically, and don't
 force-push over a teammate's history to make it disappear.
 
+CivicConnect uses a two-tier model (`main` = deployment trunk, `staging` =
+integration/testing trunk). In day-to-day work you'll almost always be
+rebasing your short-lived branch onto **`staging`**, not `main` — `main`
+only comes into play during a staging→main promotion. Everything below
+applies the same way regardless of which branch you're syncing against;
+just substitute `staging` for `main` in the commands for your normal daily
+work.
+
 ## When you'll see this
 
 - Running `git pull` and your local branch has diverged from the remote.
-- Running `git merge main` into your feature branch.
+- Running `git rebase staging` (daily sync) or `git merge staging` into your
+  working branch.
 - Running `git push` and being rejected because the remote has commits you
   don't have locally (this itself is not a conflict yet — see Case A below).
+- Rarely, during a **staging → main promotion PR**, if `main` has diverged
+  (e.g. a hotfix was applied directly against `main` outside the normal
+  flow). Treat this exactly like Case B/C, but be extra careful: resolve it
+  as a team, since a promotion conflict affects the deployment trunk.
 
 ---
 
@@ -31,9 +44,9 @@ conflict, go to Case B.
 ## Case B — `git pull` or `git merge` reports a conflict
 
 ```bash
-git pull origin main
+git pull origin staging
 # or
-git merge main
+git merge staging
 ```
 
 Git will tell you which files are conflicted:
@@ -43,6 +56,9 @@ Auto-merging docs/requirements/functional-requirements.md
 CONFLICT (content): Merge conflict in docs/requirements/functional-requirements.md
 Automatic merge failed; fix conflicts and then commit the result.
 ```
+
+(The other side of the conflict marker will say `>>>>>>> staging` in normal
+daily work, or `>>>>>>> main` only during a promotion conflict.)
 
 ### Step 1 — See what's conflicted
 
@@ -63,7 +79,8 @@ Their version of the content (what's coming in from the other branch)
 ```
 
 - `<<<<<<< HEAD` down to `=======` is **your** side.
-- `=======` down to `>>>>>>> main` (or the other branch name) is **their** side.
+- `=======` down to `>>>>>>> staging` (or `main`, or the other branch name)
+  is **their** side.
 
 ### Step 3 — Decide the correct combined content
 
@@ -123,10 +140,13 @@ git push
 
 ---
 
-## Case C — Conflict during a rebase (if your team uses `git rebase` instead of merge)
+## Case C — Conflict during a rebase (CivicConnect's default — see git-workflow.md)
+
+Because the team uses two-tier trunk-based development, you'll rebase your
+branch onto `staging` daily, and this is the case you'll hit most often:
 
 ```bash
-git rebase main
+git rebase staging
 ```
 
 If a conflict occurs mid-rebase, Git pauses and tells you which commit is
@@ -137,8 +157,15 @@ git add <resolved-file>
 git rebase --continue
 ```
 
-Repeat until the rebase finishes. If it gets too messy, you can always back
-out safely:
+Repeat until the rebase finishes, then push your rewritten branch history:
+
+```bash
+git push --force-with-lease
+```
+
+Only ever use `--force-with-lease` (never plain `--force`), and only on
+your own feature branch — never on `main`. If it gets too messy, you can
+always back out safely:
 
 ```bash
 git rebase --abort
