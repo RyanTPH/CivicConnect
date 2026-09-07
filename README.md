@@ -1,106 +1,62 @@
-# CivicConnect
+# CivicConnect — GitHub Engineering Control Setup
 
-## SEN381 Integrated Team Software Engineering Project
+This folder contains the GitHub governance scaffolding for the CivicConnect
+project (SEN381), built from the **Milestone 1 brief** and the
+**Master Project Brief**. It gives you a ready-to-use, gh-cli-friendly set of
+issue tickets, labels, PR template, and workflow documentation so that your
+repository evidence starts accumulating from day one of Milestone 1.
 
-CivicConnect is a community-focused service request management platform developed as part of the Software Engineering 381 (SEN381) integrated team project.
+## What's in here
 
-The system is intended to improve the way community service requests are submitted, assigned, tracked, resolved and reported by replacing fragmented processes such as email, telephone calls, messaging applications, spreadsheets and paper-based records with a controlled digital workflow.
-
-## Project Purpose
-
-The purpose of CivicConnect is to demonstrate the engineering of a software product across its complete lifecycle.
-
-The project focuses not only on producing working software, but also on:
-
-* Requirements engineering
-* Stakeholder and scope analysis
-* Traceability
-* Risk and constraint management
-* Engineering decision-making
-* Architecture and design
-* Controlled software construction
-* Peer review
-* Automated verification
-* Quality engineering
-* Security engineering
-* Deployment and operational readiness
-* Controlled change
-* Responsible use of Artificial Intelligence
-* Technical debt and maintainability
-* Evidence-based engineering defence
-
-## Project Structure
-
-The project is developed across four assessed milestones:
-
-| Milestone | Focus                                                             |
-| --------- | ----------------------------------------------------------------- |
-| M1        | Engineering Foundation & Requirements Baseline                    |
-| M2        | Architecture, Design & Engineering Decisions                      |
-| M3        | Controlled Construction, Integration, Quality & Release Readiness |
-| M4        | Final Product, Project Success & Engineering Defence              |
-
-The Project Engineering Document (PED) is maintained as a single evolving engineering record throughout these milestones:
-
-```text
-PED v1.0 → M1
-PED v2.0 → M2
-PED v3.0 → M3
-PED v4.0 → M4
+```
+civicconnect-github-setup/
+├── README.md                          <- this file
+├── labels.md                          <- label taxonomy + gh cli setup commands
+├── .github/
+│   ├── PULL_REQUEST_TEMPLATE.md       <- required PR template (two-reviewer model)
+│   └── issue-tasks/                   <- one .md checklist per ticket (M1-01 ... M1-14)
+└── docs/
+    ├── git-workflow.md                <- branching model, commands, PR flow
+    └── merge-conflict-resolution.md   <- step-by-step conflict resolution guide
 ```
 
-## Repository Structure
+## How to use this with your repo
 
-```text
-.github/          GitHub governance, workflows and templates
-docs/             Controlled engineering documentation
-src/              Application source code
-tests/            Automated and supporting tests
-evidence/         Milestone evidence
-README.md         Project overview
-```
+1. Copy `.github/` and `docs/` into the root of your team repository (the
+   structure matches Appendix C of the Master Project Brief).
+2. Create the labels (see `labels.md`) and the four milestones in GitHub
+   (`Milestone 1` … `Milestone 4`).
+3. Create one GitHub Issue per ticket file using the `gh` CLI:
 
-## Engineering Principles
+   ```bash
+   gh issue create \
+     --title "M1-04 — Functional Requirements & Acceptance Criteria" \
+     --body-file .github/issue-tasks/M1-04-functional-requirements.md \
+     --label "docs" --label "milestone-1" --label "priority-critical" \
+     --milestone "Milestone 1"
+   ```
 
-CivicConnect follows the principle that:
+4. Keep updating the checklist in the issue itself as work progresses — the
+   `- [ ]` items render as tickable checkboxes on GitHub and give you the
+   "authentic, progressive history" evidence the brief requires.
 
-> Working software is necessary, but working software alone is not sufficient evidence of Software Engineering competence.
+## Why every ticket is labelled the way it is
 
-Major project artefacts and decisions are therefore maintained with traceability, evidence, review and accountability.
+Per the brief's GitHub governance standard, every substantive piece of
+engineering work — not just application code — must be visible in the
+repository as issues, branches, commits and Pull Requests. So M1 tickets
+cover **documentation and governance artefacts** (PED sections, RTM, Risk
+Register, Decision Log, AI Usage Register, GitHub setup itself), because
+these are the M1 deliverables, not application code.
 
-Requirements, risks, decisions, implementation, testing and release evidence should remain connected throughout the project lifecycle.
+Each ticket carries three label categories:
 
-## Technology
+| Category | Example labels | Purpose |
+|---|---|---|
+| **Type** | `feature`, `docs`, `bug`, `chore`, `infra`, `test`, `research` | What kind of work this is |
+| **Milestone** | `milestone-1`, `milestone-2`, `milestone-3`, `milestone-4` | Which project phase it belongs to / contributes to |
+| **Priority** | `priority-critical`, `priority-high`, `priority-medium`, `priority-low` | Urgency/importance within the milestone |
 
-The technology stack has intentionally not been fixed during the initial engineering foundation phase.
-
-Technology selection will be treated as an engineering decision and will be evaluated against project requirements, constraints, team capability, security, maintainability, testing, deployment, cost and operational considerations.
-
-The selected technology stack will be documented during the Architecture, Design & Engineering Decisions milestone.
-
-## Team
-
-CivicConnect is developed by a team of three SEN381 students.
-
-Each team member is collectively responsible for understanding and being able to defend the project's engineering decisions, evidence and outcomes.
-
-## Repository Governance
-
-The repository uses controlled collaboration practices including:
-
-* Short-lived feature branches
-* Meaningful commits
-* Pull Requests
-* Peer review
-* Two-reviewer approval
-* Automated checks
-* Traceability between issues and implementation
-* Controlled changes to baselined artefacts
-* Protected main branch
-* Responsible configuration and secrets management
-
-## Project Status
-
-**Current phase:** Milestone 1 — Engineering Foundation & Requirements Baseline
-
-**Current objective:** Establish a controlled, traceable and defensible engineering baseline before making consequential architecture and technology decisions.
+This mirrors the uploaded task-checklist template's format (`# ID — Title`,
+`## Tasks`, `## Acceptance Criteria`), with labels and priority added on top
+as you requested.
