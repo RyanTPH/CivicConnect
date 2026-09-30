@@ -5,35 +5,41 @@ export async function saveServiceRequest(request) {
     throw new Error("Supabase is not configured.");
   }
 
-  const { data: category, error: categoryError } = await supabase
-    .from("request_categories")
-    .select("id")
-    .eq("name", request.category)
-    .eq("is_active", true)
-    .single();
+  // Get the currently authenticated Supabase user.
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (categoryError) {
-    throw new Error("The selected request category is not available.");
+  if (userError || !user) {
+    throw new Error("A signed-in requester is required to submit a request.");
   }
 
-  const { data: status, error: statusError } = await supabase
-    .from("request_statuses")
+  // Find the requester profile linked to the authenticated user.
+  const { data: requester, error: requesterError } = await supabase
+    .from("requesters")
     .select("id")
-    .eq("name", "Submitted")
+    .eq("user_id", user.id)
     .single();
 
-  if (statusError) {
-    throw new Error("The initial request status could not be found.");
+  if (requesterError || !requester) {
+    throw new Error("The requester profile could not be found.");
+  }
+
+  if (!request.priority?.trim()) {
+    throw new Error("A request priority is required.");
   }
 
   const { data, error } = await supabase
     .from("service_requests")
     .insert({
       reference_number: request.referenceNumber,
-      category_id: category.id,
+      requester_id: requester.id,
+      category: request.category,
+      priority: request.priority,
       title: request.title,
       description: request.description,
-      status_id: status.id,
+      status: "Submitted",
     })
     .select()
     .single();

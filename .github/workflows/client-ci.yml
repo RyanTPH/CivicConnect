@@ -1,0 +1,46 @@
+name: Client CI
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - main
+
+  push:
+    branches:
+      - staging
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify-client:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: src/client
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
