@@ -5,12 +5,23 @@ function createReferenceNumber() {
   return `CC-${year}-${uniquePart}`;
 }
 
-export function createServiceRequest({ category, title, description }) {
+export function createServiceRequest({
+  category,
+  priority,
+  title,
+  description,
+}) {
   const cleanCategory = category.trim();
+  const cleanPriority = priority.trim();
   const cleanTitle = title.trim();
   const cleanDescription = description.trim();
 
-  if (!cleanCategory || !cleanTitle || !cleanDescription) {
+  if (
+    !cleanCategory ||
+    !cleanPriority ||
+    !cleanTitle ||
+    !cleanDescription
+  ) {
     throw new Error("Please complete all required fields.");
   }
 
@@ -18,6 +29,7 @@ export function createServiceRequest({ category, title, description }) {
     id: crypto.randomUUID(),
     referenceNumber: createReferenceNumber(),
     category: cleanCategory,
+    priority: cleanPriority,
     title: cleanTitle,
     description: cleanDescription,
     status: "Submitted",
