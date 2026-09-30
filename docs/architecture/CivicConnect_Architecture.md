@@ -12,63 +12,8 @@ The architecture also applies the design decisions established for Milestone 2:
 - **Adapter Pattern** at the boundary between CivicConnect and external or legacy municipal systems.
 
 ## Architecture Diagram
+<img width="1454" height="820" alt="image" src="https://github.com/user-attachments/assets/19408af1-89a5-439d-93b7-78c7b742a813" />
 
-```mermaid
-flowchart TD
-    Users["Users / Client<br/>Citizen • Municipal Staff • Administrator"]
-
-    subgraph CC["CivicConnect — Modular Monolith"]
-        Presentation["Presentation Layer<br/>Web Application"]
-
-        Auth["Authentication & Authorisation Layer<br/>Supabase Auth<br/>JWT / Authenticated Session"]
-
-        App["Application Layer — Services"]
-        Request["Request Processing Service"]
-        Notification["Notification Service"]
-        UserMgmt["User Management Service"]
-
-        Domain["Domain Layer — Business Logic"]
-        RequestDomain["Request Domain Models"]
-        NotificationDomain["Notification Domain Models"]
-        UserDomain["User Domain Models"]
-
-        Infrastructure["Infrastructure Layer — Implementations"]
-        Persistence["Data Persistence / Repositories"]
-        NotificationAdapters["Notification Adapters"]
-
-        RLS["PostgreSQL Row Level Security<br/>RBAC / Data-Access Policies"]
-        Data["Supabase PostgreSQL + PostGIS"]
-
-        Users --> Presentation
-        Presentation --> Auth
-        Auth --> App
-
-        App --> Request
-        App --> Notification
-        App --> UserMgmt
-
-        Request --> Domain
-        Notification --> Domain
-        UserMgmt --> Domain
-
-        Domain --> Infrastructure
-        Infrastructure --> Persistence
-        Infrastructure --> NotificationAdapters
-
-        Persistence --> RLS
-        RLS --> Data
-    end
-
-    External["External / Legacy Municipal Systems<br/>Government / Third-Party Services"]
-    Adapter["Adapter Pattern<br/>Translation Layer"]
-
-    App --> Adapter
-    Adapter <-->|HTTPS / REST API| External
-
-    DIP["DIP / Interfaces<br/>Internal dependency boundary"]
-    App -.-> DIP
-    DIP -.-> Infrastructure
-```
 
 ## Layer Responsibilities
 
