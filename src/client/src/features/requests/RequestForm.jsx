@@ -4,6 +4,7 @@ import { createServiceRequest } from "./requestService";
 function RequestForm() {
     const [formData, setFormData] = useState({
         category: "",
+        priority: "",
         title: "",
         description: "",
     });
@@ -31,6 +32,7 @@ function RequestForm() {
 
             setFormData({
                 category: "",
+                priority: "",
                 title: "",
                 description: "",
             });
@@ -59,6 +61,18 @@ function RequestForm() {
                         name="category"
                         type="text"
                         value={formData.category}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+
+                <div className="field">
+                    <label htmlFor="priority">Priority</label>
+                    <input
+                        id="priority"
+                        name="priority"
+                        type="text"
+                        value={formData.priority}
                         onChange={handleChange}
                         required
                     />
