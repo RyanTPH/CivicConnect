@@ -28,7 +28,7 @@ create table service_requests (
 
   updated_at timestamptz null default null,
 
-  resolved_at timestamptz null default null
+  resolved_at timestamptz null default null,
 
   deleted_at TIMESTAMP NULL DEFAULT NULL;
 
