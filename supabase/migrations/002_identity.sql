@@ -20,11 +20,15 @@ create table public.requesters (
   constraint fk_requesters_user_id
     foreign key (user_id) references auth.users (id)
     on delete set null on update no action,
+
   constraint fk_requesters_deleted_by
     foreign key (deleted_by) references auth.users (id)
     on delete restrict on update no action,
+
   constraint ck_requesters_deleted_pair check (deleted_by is null or deleted_at is not null),
+
   constraint ck_requesters_first_name check (btrim(first_name) <> ''),
+
   constraint ck_requesters_last_name  check (btrim(last_name)  <> '')
 );
 create index idx_requesters_deleted_by on public.requesters (deleted_by) where deleted_by is not null;
@@ -44,14 +48,19 @@ create table public.staff (
   deleted_by  uuid,
 
   constraint uq_staff_user_id unique (user_id),
+
   constraint fk_staff_user_id
     foreign key (user_id) references auth.users (id)
     on delete restrict on update no action,
+
   constraint fk_staff_deleted_by
     foreign key (deleted_by) references auth.users (id)
     on delete restrict on update no action,
+
   constraint ck_staff_deleted_pair check (deleted_by is null or deleted_at is not null),
+
   constraint ck_staff_first_name check (btrim(first_name) <> ''),
+
   constraint ck_staff_last_name  check (btrim(last_name)  <> '')
 );
 create index idx_staff_deleted_by on public.staff (deleted_by) where deleted_by is not null;
@@ -71,12 +80,15 @@ create table public.requester_contacts (
   constraint fk_requester_contacts_requester_id
     foreign key (requester_id) references public.requesters (requester_id)
     on delete restrict on update no action,
+
   constraint fk_requester_contacts_deleted_by
     foreign key (deleted_by) references auth.users (id)
     on delete restrict on update no action,
+
   constraint ck_requester_contacts_deleted_pair check (deleted_by is null or deleted_at is not null),
   constraint ck_requester_contacts_address_not_blank
     check (btrim(address) <> '' and address = btrim(address)),
+    
   constraint ck_requester_contacts_email_lowercase
     check (channel <> 'email' or address = lower(address))
 );
@@ -105,15 +117,4 @@ create view public.staff_current with (security_invoker = true) as
 create view public.requesters_current with (security_invoker = true) as
   select * from public.requesters where deleted_at is null;
 
--- ---------- helpers for the logged-in staff member ----------
-create or replace function public.current_staff_id()
-returns uuid language sql stable security definer set search_path = public as $$
-  select staff_id from public.staff
-  where user_id = auth.uid() and is_active and deleted_at is null
-$$;
 
-create or replace function public.current_staff_role()
-returns public.staff_role language sql stable security definer set search_path = public as $$
-  select role from public.staff
-  where user_id = auth.uid() and is_active and deleted_at is null
-$$;
