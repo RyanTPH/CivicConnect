@@ -1,4 +1,3 @@
--- 004_channels_and_attachments.sql
 -- channel_messages: every inbound/outbound message (email, WhatsApp, SMS, phone).
 -- attachments: files on a request. Also closes the circular reference with
 -- service_requests.origin_message_id.

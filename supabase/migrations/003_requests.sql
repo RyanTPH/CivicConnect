@@ -1,4 +1,3 @@
--- 003_requests.sql
 -- The request lifecycle: service_requests, comments, request_status_history,
 -- request_assignments, status_transitions.
 -- origin_message_id is added WITHOUT its foreign key here; 004 adds it once

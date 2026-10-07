@@ -1,4 +1,4 @@
--- 002_identity.sql
+
 -- requesters, staff, requester_contacts. No profiles table: each table points
 -- straight at Supabase auth.users(id). Names live in these tables.
 -- Roles: a person is a requester (row in requesters) and/or internal (row in staff);

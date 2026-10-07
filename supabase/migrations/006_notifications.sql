@@ -1,4 +1,4 @@
--- 005_notifications_and_audit.sql
+
 -- notifications (UI-08) and the append-only audit_log written by triggers (NFR-009).
 
 create table public.notifications (

@@ -1,4 +1,4 @@
--- 006_request_workflow.sql
+-- 008_request_workflow.sql
 -- Business rules that must be atomic, kept in the database:
 --   * first history row when a request is created
 --   * change_request_status(): status update + history in ONE transaction

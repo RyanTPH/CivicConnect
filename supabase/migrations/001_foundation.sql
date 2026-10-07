@@ -1,4 +1,4 @@
--- 001_foundation.sql
+
 -- Shared types and helper functions used by every later migration.
 -- Provisional lists (categories, statuses, priorities) are domains, so each
 -- list lives in ONE place and can be changed with ALTER DOMAIN.
