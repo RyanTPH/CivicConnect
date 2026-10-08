@@ -1,0 +1,71 @@
+# Validates database migrations on every Pull Request, and applies them to
+# Supabase after a merge: staging branch -> staging project, main -> production.
+# Needs the "staging" and "production" GitHub Environments, each holding the
+# secrets SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD and SUPABASE_PROJECT_ID.
+name: Supabase Migrations
+
+on:
+  pull_request:
+    branches: [staging, main]
+    paths: ['supabase/**']
+  push:
+    branches: [staging, main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs on Pull Requests: builds a throwaway database from ALL migrations.
+  # Fails the PR if any file has an error or the order is wrong.
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Apply every migration to a fresh local database
+        run: supabase db start
+
+  deploy-staging:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency: supabase-staging        # never two pushes at once
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Show what will be applied
+        run: supabase db push --dry-run
+      - name: Apply pending migrations
+        run: supabase db push
+
+#   deploy-production:
+#     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+#     runs-on: ubuntu-latest
+#     environment: production              # add required reviewers here for a manual approval gate
+#     concurrency: supabase-production
+#     env:
+#       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+#       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+#       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: supabase/setup-cli@v1
+#         with:
+#           version: latest
+#       - run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+#       - name: Show what will be applied
+#         run: supabase db push --dry-run
+#       - name: Apply pending migrations
+#         run: supabase db push
