@@ -1,0 +1,7 @@
+actor,comments_pass,history_pass,assignments_pass,contacts_pass,result
+Admin A,true,true,true,true,PASS
+Direct writes blocked,true,true,true,true,PASS
+Manager A,true,true,true,true,PASS
+Requester A,true,true,true,true,PASS
+Requester B,true,true,true,true,PASS
+Staff A,true,true,true,true,PASS
