@@ -1,0 +1,321 @@
+/* Shared CivicConnect UI components */
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.buttonSecondary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-border);
+}
+
+.buttonDanger {
+  background: var(--color-danger);
+  color: #ffffff;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* Form fields */
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.formLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+.formControl {
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.formControl::placeholder {
+  color: var(--color-text-muted);
+}
+
+.formControl:focus {
+  border-color: var(--color-primary);
+}
+
+textarea.formControl {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.formControlError {
+  border-color: var(--color-danger);
+}
+
+.helpText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.fieldError {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+}
+
+/* Status badges */
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.statusPending {
+  background: var(--color-danger-bg);
+  color: #a7192a;
+  border-color: #ffc5cd;
+}
+
+.statusProgress {
+  background: var(--color-warning-bg);
+  color: #9c4600;
+  border-color: #ffd49b;
+}
+
+.statusResolved {
+  background: var(--color-success-bg);
+  color: #166534;
+  border-color: #a5ebbd;
+}
+
+.statusCancelled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.statusUnknown {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* Cards */
+
+.card {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTitle {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+}
+
+/* Page headers */
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.pageTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+}
+
+.pageDescription {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.pageAction {
+  display: flex;
+  align-items: center;
+}
+
+/* Empty states */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5);
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.emptyDescription {
+  max-width: 340px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.emptyAction {
+  margin-top: var(--space-3);
+}
+
+/* Loading states */
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 180px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.loadingState p {
+  margin: 0;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error banners */
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid #ffc5cd;
+  border-radius: var(--radius-md);
+  background: var(--color-danger-bg);
+  color: #a7192a;
+}
+
+.errorBanner > svg {
+  flex-shrink: 0;
+}
+
+.errorMessage {
+  flex: 1;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.dismissButton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  margin: -10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+}
+
+.dismissButton:hover {
+  background: rgb(220 38 55 / 10%);
+}
+
+/* Responsive arrangements */
+
+@media (min-width: 768px) {
+  .pageHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
