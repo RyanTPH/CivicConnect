@@ -9,6 +9,7 @@ import { Bell, Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { requesterNavigation } from "./navigation";
 import styles from "./AppLayout.module.css";
+import {LogoutButton} from "../../modules/auth";
 
 // Section labels displayed in the application header.
 const pageTitles = {
@@ -69,10 +70,7 @@ export default function AppLayout() {
     <div className={styles.appShell}>
       {/* Permanent desktop navigation */}
       <aside className={styles.sidebar}>
-        <NavLink
-          to="/dashboard"
-          className={styles.brand}
-        >
+        <NavLink to="/dashboard" className={styles.brand}>
           CivicConnect
         </NavLink>
 
@@ -80,24 +78,23 @@ export default function AppLayout() {
           className={styles.desktopNavigation}
           aria-label="Desktop requester navigation"
         >
-          {requesterNavigation.map(
-            ({ label, path, icon: Icon }) => (
-              <NavLink
-                key={path}
-                to={path}
-                end={path === "/requests"}
-                className={({ isActive }) =>
-                  `${styles.sidebarLink} ${
-                    isActive ? styles.sidebarActive : ""
-                  }`
-                }
-              >
-                <Icon size={20} aria-hidden="true" />
-                <span>{label}</span>
-              </NavLink>
-            )
-          )}
+          {requesterNavigation.map(({ label, path, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              end={path === "/requests"}
+              className={({ isActive }) =>
+                `${styles.sidebarLink} ${isActive ? styles.sidebarActive : ""}`
+              }
+            >
+              <Icon size={20} aria-hidden="true" />
+              <span>{label}</span>
+            </NavLink>
+          ))}
         </nav>
+        <div className={styles.sidebarFooter}>
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Main page area */}
@@ -116,14 +113,10 @@ export default function AppLayout() {
             </button>
 
             <div className={styles.headerText}>
-              <span className={styles.headerEyebrow}>
-                CivicConnect
-              </span>
+              <span className={styles.headerEyebrow}>CivicConnect</span>
 
               {/* Section label, not the main page heading */}
-              <span className={styles.headerTitle}>
-                {pageTitle}
-              </span>
+              <span className={styles.headerTitle}>{pageTitle}</span>
             </div>
           </div>
 
@@ -137,18 +130,12 @@ export default function AppLayout() {
         </header>
 
         {/* Each page supplies its own h1 via PageHeader */}
-        <main
-          className={styles.content}
-          id="main-content"
-        >
+        <main className={styles.content} id="main-content">
           <Outlet />
         </main>
       </div>
 
-      <MobileMenu
-        isOpen={menuOpen}
-        onClose={closeMenu}
-      />
+      <MobileMenu isOpen={menuOpen} onClose={closeMenu} />
     </div>
   );
 }

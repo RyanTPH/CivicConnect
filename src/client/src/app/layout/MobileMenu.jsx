@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 
 import { requesterNavigation } from "./navigation";
 import styles from "./AppLayout.module.css";
+import {LogoutButton} from "../../modules/auth";
 
 
 
@@ -72,7 +73,7 @@ export default function MobileMenu({ isOpen, onClose }) {
       />
 
       <aside
-        id= "mobile-navigation"
+        id="mobile-navigation"
         ref={menuRef}
         className={styles.mobileMenu}
         role="dialog"
@@ -114,6 +115,9 @@ export default function MobileMenu({ isOpen, onClose }) {
             </NavLink>
           ))}
         </nav>
+        <div className={styles.mobileMenuFooter}>
+          <LogoutButton onSignedOut={onClose} />
+        </div>
       </aside>
     </div>
   );

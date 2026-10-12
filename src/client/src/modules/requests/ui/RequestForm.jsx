@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createServiceRequest } from "./requestService";
+import { createServiceRequest } from "../service/requestService";
 
 function RequestForm() {
     const [formData, setFormData] = useState({
