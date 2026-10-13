@@ -1,5 +1,5 @@
 
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "../../../shared/lib/supabaseClient";
 
 // Create errors that the frontend can identify.
 function requestError(code, message) {
