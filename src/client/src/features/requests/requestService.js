@@ -1,3 +1,13 @@
+
+const VALID_CATEGORIES = [
+  "Water and Sanitation",
+  "Roads and Transport",
+  "Electricity",
+  "Waste Management",
+  "Public Safety",
+  "Other",
+];
+
 function createReferenceNumber() {
   const year = new Date().getFullYear();
   const uniquePart = crypto.randomUUID().slice(0, 8).toUpperCase();
@@ -7,32 +17,36 @@ function createReferenceNumber() {
 
 export function createServiceRequest({
   category,
-  priority,
   title,
   description,
-}) {
-  const cleanCategory = category.trim();
-  const cleanPriority = priority.trim();
-  const cleanTitle = title.trim();
-  const cleanDescription = description.trim();
+} = {}) {
+  const cleanCategory =
+    typeof category === "string" ? category.trim() : "";
+  const cleanTitle =
+    typeof title === "string" ? title.trim() : "";
+  const cleanDescription =
+    typeof description === "string" ? description.trim() : "";
 
-  if (
-    !cleanCategory ||
-    !cleanPriority ||
-    !cleanTitle ||
-    !cleanDescription
-  ) {
+  // Ensure all required fields contain information.
+  if (!cleanCategory || !cleanTitle || !cleanDescription) {
     throw new Error("Please complete all required fields.");
   }
 
+  // Only accept categories supported by the database.
+  if (!VALID_CATEGORIES.includes(cleanCategory)) {
+    throw new Error("Please select a valid request category.");
+  }
+
+  // Match the existing form's title limit.
+  if (cleanTitle.length > 120) {
+    throw new Error("The request title must be 120 characters or less.");
+  }
+
   return {
-    id: crypto.randomUUID(),
     referenceNumber: createReferenceNumber(),
     category: cleanCategory,
-    priority: cleanPriority,
     title: cleanTitle,
     description: cleanDescription,
     status: "Submitted",
-    createdAt: new Date().toISOString(),
   };
 }
