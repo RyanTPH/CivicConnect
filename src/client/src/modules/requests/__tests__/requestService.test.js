@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createServiceRequest } from "./requestService";
+import { createServiceRequest } from "../service/requestService";
 
 describe("createServiceRequest", () => {
     it("creates a valid CivicConnect service request", () => {

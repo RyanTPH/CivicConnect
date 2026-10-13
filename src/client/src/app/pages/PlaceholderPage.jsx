@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import PageHeader from "../components/ui/PageHeader";
+import PageHeader from "../../shared/ui/PageHeader";
 import styles from "./PlaceholderPage.module.css";
 
 // Temporary placeholder until each requester screen is implemented.
