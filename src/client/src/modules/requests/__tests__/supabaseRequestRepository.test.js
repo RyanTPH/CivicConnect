@@ -1,7 +1,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { saveServiceRequest } from "./supabaseRequestRepository";
-import { supabase } from "../../lib/supabaseClient";
+import { saveServiceRequest } from "../repository/supabaseRequestRepository";
+import { supabase } from "../../../shared/lib/supabaseClient";
 
 // Mock the Supabase functions used by the repository.
 const mocks = vi.hoisted(() => ({
@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   existingSingle: vi.fn(),
 }));
 
-vi.mock("../../lib/supabaseClient", () => ({
+vi.mock("../../../shared/lib/supabaseClient", () => ({
   supabase: {
     auth: {
       getUser: mocks.getUser,

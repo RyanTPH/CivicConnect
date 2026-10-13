@@ -1,4 +1,3 @@
-
 import {
   afterAll,
   beforeAll,
@@ -8,9 +7,11 @@ import {
 } from "vitest";
 
 import { createClient } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabaseClient";
-import { createServiceRequest } from "./requestService";
-import { saveServiceRequest } from "./supabaseRequestRepository";
+import { loadEnv } from "vite";
+
+import { supabase } from "../../../shared/lib/supabaseClient";
+import { createServiceRequest } from "../service/requestService";
+import { saveServiceRequest } from "../repository/supabaseRequestRepository";
 
 // Run real database tests only when explicitly enabled.
 const integrationDescribe =
@@ -19,36 +20,47 @@ const integrationDescribe =
     : describe.skip;
 
 integrationDescribe("Service request database integration", () => {
-  const localUrl = "http://127.0.0.1:54321";
+  const testEnv = loadEnv("test", process.cwd(), "");
+
+  const stagingUrl = testEnv.VITE_TEST_SUPABASE_STAGING_URL;
+  const supabaseUrl = testEnv.VITE_SUPABASE_URL;
+  const supabaseKey = testEnv.VITE_SUPABASE_ANON_KEY;
 
   let requesterId;
 
   beforeAll(async () => {
-    // Ensure we NEVER run against the team's production database.
-    if (import.meta.env.VITE_SUPABASE_URL !== localUrl) {
+    // Ensure the tests use the configured staging project.
+    if (
+      !stagingUrl ||
+      !stagingUrl.startsWith("https://") ||
+      supabaseUrl !== stagingUrl
+    ) {
       throw new Error(
-        "Integration tests must use the local Supabase sandbox."
+        "Integration tests must use the approved staging Supabase project."
       );
     }
 
-    if (!supabase || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      throw new Error("Local Supabase is not configured.");
+    if (!supabase || !supabaseKey) {
+      throw new Error("Staging Supabase is not configured.");
     }
 
-    const password = process.env.TEST_REQUESTER_PASSWORD;
+    const email = testEnv.TEST_REQUESTER_EMAIL;
+    const password = testEnv.TEST_REQUESTER_PASSWORD;
 
-    if (!password) {
-      throw new Error("Test requester password is missing.");
+    if (!email || !password) {
+      throw new Error(
+        "Test requester email or password is missing."
+      );
     }
 
-    // Sign in as our local test requester.
+    // Sign in as the seeded staging requester.
     const { data: authData, error: authError } =
       await supabase.auth.signInWithPassword({
-        email: "requester104@civicconnect.test",
+        email,
         password,
       });
 
-    if (authError || !authData.user) {
+    if (authError || !authData?.user) {
       throw new Error(
         `Test requester sign-in failed: ${
           authError?.message ?? "No user returned"
@@ -105,7 +117,7 @@ integrationDescribe("Service request database integration", () => {
       category: "Electricity",
       title: "Integration test - broken streetlight",
       description:
-        "Testing CivicConnect persistence in the local sandbox.",
+        "Testing CivicConnect persistence in shared staging.",
     });
 
     // Save a real request.
@@ -157,8 +169,7 @@ integrationDescribe("Service request database integration", () => {
         "Testing PostgreSQL category validation.",
     });
 
-    // Deliberately bypass JavaScript category validation
-    // to confirm the database rejects invalid enum values.
+    // Bypass JavaScript validation to test database constraints.
     const { data, error } = await supabase
       .from("service_requests")
       .insert({
@@ -175,11 +186,12 @@ integrationDescribe("Service request database integration", () => {
     expect(error).not.toBeNull();
 
     console.log("Invalid category database error:", {
-  code: error?.code,
-  message: error?.message,
-  details: error?.details,
-});
-    // PostgreSQL rejects invalid enum values.
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+    });
+
+    // PostgreSQL check constraint violation.
     expect(error.code).toBe("23514");
 
     // Confirm the invalid request was not saved.
@@ -200,8 +212,8 @@ integrationDescribe("Service request database integration", () => {
   it("rejects a request submitted without authentication", async () => {
     // Create a separate Supabase client with no user session.
     const anonymousClient = createClient(
-      localUrl,
-      import.meta.env.VITE_SUPABASE_ANON_KEY,
+      stagingUrl,
+      supabaseKey,
       {
         auth: {
           persistSession: false,
@@ -211,9 +223,11 @@ integrationDescribe("Service request database integration", () => {
       }
     );
 
-    const { data: sessionData } =
+    // Confirm no user is signed in.
+    const { data: sessionData, error: sessionError } =
       await anonymousClient.auth.getSession();
 
+    expect(sessionError).toBeNull();
     expect(sessionData.session).toBeNull();
 
     const request = createServiceRequest({
@@ -238,6 +252,11 @@ integrationDescribe("Service request database integration", () => {
 
     expect(data).toBeNull();
     expect(error).not.toBeNull();
+
+    console.log("Unauthenticated database error:", {
+      code: error?.code,
+      message: error?.message,
+    });
 
     // PostgreSQL permission/RLS failure.
     expect(error.code).toBe("42501");
