@@ -26,7 +26,7 @@ export async function findStaffByUserId(userId) {
 
   const { data, error } = await supabase
     .from("staff")
-    .select("staff_id, first_name, last_name, role")
+    .select("staff_id, first_name, last_name, role, department")
     .eq("user_id", userId)
     .eq("is_active", true)
     .is("deleted_at", null)

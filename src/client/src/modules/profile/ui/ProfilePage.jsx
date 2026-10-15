@@ -14,7 +14,6 @@ import ErrorBanner from "../../../shared/ui/ErrorBanner";
 
 import styles from "./ProfilePage.module.css";
 
-// Format account creation dates for South African users.
 function formatDate(value) {
   if (!value) return "Not available";
 
@@ -31,9 +30,14 @@ function formatDate(value) {
   }).format(date);
 }
 
-// Read-only requester profile using the existing auth context.
-export default function ProfilePage() {
+// Shared profile presentation for requester and staff portals.
+export default function ProfilePage({ portal = "requester" }) {
   const { user, access, loading, accessError } = useAuth();
+
+  const isStaffPortal = portal === "staff";
+  const homePath = isStaffPortal
+    ? "/staff/dashboard"
+    : "/dashboard";
 
   if (loading) {
     return <LoadingState message="Loading your profile..." />;
@@ -47,22 +51,32 @@ export default function ProfilePage() {
     );
   }
 
-  const requester = access?.requester;
+  // Select an identity explicitly rather than guessing from the user.
+  const profile = isStaffPortal
+    ? access?.staff
+    : access?.requester;
 
-  if (!user || !requester) {
+  if (!user || !profile) {
     return (
       <ErrorBanner
-        message="An active requester profile could not be found."
+        message="An active account profile could not be found."
       />
     );
   }
 
-  const firstName = requester.first_name?.trim() || "";
-  const lastName = requester.last_name?.trim() || "";
+  const firstName = profile.first_name?.trim() || "";
+  const lastName = profile.last_name?.trim() || "";
 
   const fullName =
     [firstName, lastName].filter(Boolean).join(" ") ||
-    "Requester";
+    "CivicConnect User";
+
+  const roleLabel = isStaffPortal
+    ? profile.role
+      ? profile.role.charAt(0).toUpperCase() +
+        profile.role.slice(1)
+      : "Staff"
+    : "Requester";
 
   return (
     <section className={styles.page}>
@@ -85,7 +99,7 @@ export default function ProfilePage() {
 
             <span className={styles.roleBadge}>
               <ShieldCheck size={16} aria-hidden="true" />
-              Requester
+              {roleLabel}
             </span>
           </div>
         </Card>
@@ -94,8 +108,8 @@ export default function ProfilePage() {
           <div className={styles.sectionHeader}>
             <h2>Personal Information</h2>
             <p>
-              Your information is associated with your
-              CivicConnect requester account.
+              Your information is linked to your
+              CivicConnect account.
             </p>
           </div>
 
@@ -125,6 +139,22 @@ export default function ProfilePage() {
               </dt>
               <dd>{formatDate(user.created_at)}</dd>
             </div>
+
+            {isStaffPortal && (
+              <>
+                <div className={styles.detail}>
+                  <dt>Staff Role</dt>
+                  <dd>{roleLabel}</dd>
+                </div>
+
+                <div className={styles.detail}>
+                  <dt>Department</dt>
+                  <dd>
+                    {profile.department || "Not provided"}
+                  </dd>
+                </div>
+              </>
+            )}
           </dl>
         </Card>
 
@@ -133,13 +163,13 @@ export default function ProfilePage() {
             <h2>Account Settings</h2>
             <p>
               Your profile is currently read-only.
-              Account editing will be available after
-              the relevant database permissions are approved.
+              Changes to account information require
+              an authorised update workflow.
             </p>
           </div>
 
           <div className={styles.actions}>
-            <Link to="/dashboard" className={styles.backLink}>
+            <Link to={homePath} className={styles.backLink}>
               Return to Dashboard
             </Link>
           </div>

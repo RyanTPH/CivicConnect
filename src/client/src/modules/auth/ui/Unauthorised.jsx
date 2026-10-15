@@ -11,9 +11,9 @@ export default function Unauthorized() {
   const { access, loading } = useAuth();
 
   // Wait until the user's current permissions have been resolved.
-if (loading) {
-  return <LoadingState message="Checking your account permissions..." />;
-}
+  if (loading) {
+    return <LoadingState message="Checking your account permissions..." />;
+  }
 
   return (
     <main
@@ -35,11 +35,13 @@ if (loading) {
       />
 
       {access?.isRequester ? (
-        <Link to="/dashboard">
-          Return to Dashboard
-        </Link>
+        <Link to="/dashboard">Return to Dashboard</Link>
       ) : (
         <LogoutButton />
+      )}
+
+      {access?.isStaff && access.staffRole === "staff" && (
+        <Link to="/staff/dashboard">Return to Staff Dashboard</Link>
       )}
     </main>
   );

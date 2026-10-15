@@ -22,3 +22,17 @@ export const requesterNavigation = [
     icon: UserRound,
   },
 ];
+
+// General-staff navigation uses the same layout as the requester portal.
+export const staffNavigation = [
+  {
+    label: "Staff Dashboard",
+    path: "/staff/dashboard",
+    icon: Home,
+  },
+  {
+    label: "My Profile",
+    path: "/staff/profile",
+    icon: UserRound,
+  },
+];

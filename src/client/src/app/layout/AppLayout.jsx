@@ -8,7 +8,7 @@ import {
 import { Menu } from "lucide-react";
 
 import MobileMenu from "./MobileMenu";
-import { requesterNavigation } from "./navigation";
+import { requesterNavigation, staffNavigation } from "./navigation";
 import styles from "./AppLayout.module.css";
 import { LogoutButton } from "../../modules/auth";
 
@@ -20,10 +20,19 @@ const pageTitles = {
   "/track": "Track Request",
   "/notifications": "Notifications",
   "/profile": "My Profile",
+  "/staff/dashboard": "Staff Dashboard",
+  "/staff/profile": "Staff Profile",
 };
 
-export default function AppLayout() {
+export default function AppLayout({ portal = "requester" }) {
   const { pathname } = useLocation();
+
+  // Select navigation.
+  const isStaffPortal = portal === "staff";
+
+  const navigation = isStaffPortal ? staffNavigation : requesterNavigation;
+
+  const homePath = isStaffPortal ? "/staff/dashboard" : "/dashboard";
 
   // Remember which route opened the navigation drawer.
   const [menuRoute, setMenuRoute] = useState(null);
@@ -55,8 +64,9 @@ export default function AppLayout() {
     };
   }, [closeMenu]);
 
-  const pageTitle =
-    pathname.startsWith("/requests/") && pathname !== "/requests/new"
+  const pageTitle = pathname.startsWith("/staff/requests/")
+    ? "Manage Request"
+    : pathname.startsWith("/requests/") && pathname !== "/requests/new"
       ? "Request Details"
       : pageTitles[pathname] || "CivicConnect";
 
@@ -64,15 +74,17 @@ export default function AppLayout() {
     <div className={styles.appShell}>
       {/* Permanent desktop navigation */}
       <aside className={styles.sidebar}>
-        <NavLink to="/dashboard" className={styles.brand}>
+        <NavLink to={homePath} className={styles.brand}>
           CivicConnect
         </NavLink>
 
         <nav
           className={styles.desktopNavigation}
-          aria-label="Desktop requester navigation"
+          aria-label={
+            isStaffPortal ? "Staff navigation" : "Requester navigation"
+          }
         >
-          {requesterNavigation.map(({ label, path, icon: Icon }) => (
+          {navigation.map(({ label, path, icon: Icon }) => (
             <NavLink
               key={path}
               to={path}
@@ -114,7 +126,7 @@ export default function AppLayout() {
             </div>
           </div>
 
-          <NotificationBell />
+          <NotificationBell portal={portal} />
         </header>
 
         {/* Each page supplies its own h1 via PageHeader */}
@@ -123,7 +135,12 @@ export default function AppLayout() {
         </main>
       </div>
 
-      <MobileMenu isOpen={menuOpen} onClose={closeMenu} />
+      <MobileMenu
+        isOpen={menuOpen}
+        onClose={closeMenu}
+        navigation={navigation}
+        portal={portal}
+      />
     </div>
   );
 }

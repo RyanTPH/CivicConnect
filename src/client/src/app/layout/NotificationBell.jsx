@@ -1,111 +1,263 @@
 ﻿
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  RefreshCw,
+  X,
+} from "lucide-react";
+
+import { useAuth } from "../../modules/auth";
 import { supabase } from "../../shared/lib/supabaseClient";
-import { observeRequestStatusNotifications } from "../../modules/notifications/service/notificationObserver";
-import styles from "./AppLayout.module.css";
+import { observeRequestStatusNotifications } from
+  "../../modules/notifications/service/notificationObserver";
 
-export default function NotificationBell() {
+import layoutStyles from "./AppLayout.module.css";
+import styles from "./NotificationBell.module.css";
+
+const POLL_INTERVAL_MS = 15000;
+
+const EVENT_TITLES = {
+  accepted: "Request Accepted",
+  rejected: "Request Rejected",
+  updated: "Request Updated",
+  resolved: "Request Resolved",
+  closed: "Request Closed",
+};
+
+function formatDate(value) {
+  if (!value) return "Date unavailable";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en-ZA", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function getTitle(notification) {
+  return (
+    EVENT_TITLES[notification.event_type] ??
+    "Request Notification"
+  );
+}
+
+function getMessage(notification) {
+  if (notification.status_snapshot) {
+    return `Your service request status is now ${notification.status_snapshot}.`;
+  }
+
+  return "There is an update to your service request.";
+}
+
+// Shared header notification popover for authenticated portals.
+export default function NotificationBell({
+  portal = "requester",
+}) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
+  const [notificationState, setNotificationState] = useState({
+    userId: null,
+    items: [],
+    loading: false,
+    error: "",
+  });
+
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const containerRef = useRef(null);
+  const [selectedId, setSelectedId] = useState(null);
 
+  const containerRef = useRef(null);
+  const bellRef = useRef(null);
+  const panelRef = useRef(null);
+  const requestVersion = useRef(0);
+
+  // Only display notifications loaded for the current account.
+  const currentState =
+    notificationState.userId === userId
+      ? notificationState
+      : { items: [], loading: true, error: "" };
+
+  const notifications = currentState.items;
+  const loading = currentState.loading;
+  const error = currentState.error;
+
+  const selectedNotification = notifications.find(
+    (item) => item.notification_id === selectedId
+  );
+
+  const unreadCount = notifications.filter(
+    (item) => !item.read_at
+  ).length;
+
+  // Retrieve only notifications authorised by the existing RPC.
   const loadNotifications = useCallback(async () => {
-    if (!supabase) {
-      setError("Supabase is not configured.");
+    const version = ++requestVersion.current;
+
+    if (!userId || !supabase) {
+      setNotificationState({
+        userId,
+        items: [],
+        loading: false,
+        error: "Notifications are unavailable.",
+      });
       return;
     }
 
-    setLoading(true);
+    setNotificationState((previous) => ({
+      userId,
+      items: previous.userId === userId ? previous.items : [],
+      loading: true,
+      error: "",
+    }));
 
-    const { data, error: fetchError } = await supabase.rpc(
-      "get_my_notifications"
-    );
+    try {
+      const { data, error: fetchError } = await supabase.rpc(
+        "get_my_notifications"
+      );
 
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setNotifications(data ?? []);
-      setError("");
+      if (version !== requestVersion.current) return;
+      if (fetchError) throw fetchError;
+
+      setNotificationState({
+        userId,
+        items: data ?? [],
+        loading: false,
+        error: "",
+      });
+    } catch {
+      if (version !== requestVersion.current) return;
+
+      setNotificationState((previous) => ({
+        userId,
+        items: previous.userId === userId ? previous.items : [],
+        loading: false,
+        error: "Unable to load notifications. Please try again.",
+      }));
     }
+  }, [userId]);
 
-    setLoading(false);
-  }, []);
-
+  // Refresh on mount, successful local status changes and polling.
   useEffect(() => {
-    const initialLoad = setTimeout(loadNotifications, 0);
+    if (!userId) return;
 
-    const unsubscribe = observeRequestStatusNotifications(
-      loadNotifications
-    );
+    const initialLoad = window.setTimeout(() => {
+      void loadNotifications();
+    }, 0);
 
-    const interval = setInterval(loadNotifications, 15000);
+    const unsubscribe = observeRequestStatusNotifications(() => {
+      void loadNotifications();
+    });
+
+    const interval = window.setInterval(() => {
+      if (!document.hidden) {
+        void loadNotifications();
+      }
+    }, POLL_INTERVAL_MS);
 
     return () => {
-      clearTimeout(initialLoad);
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
       unsubscribe();
-      clearInterval(interval);
-    };
-  }, [loadNotifications]);
 
+      // Ignore results from requests started before cleanup.
+      requestVersion.current += 1;
+    };
+  }, [userId, loadNotifications]);
+
+  // Close on outside click or Escape.
   useEffect(() => {
-    function handleClickOutside(event) {
+    if (!open) return;
+
+    function handleOutsideClick(event) {
       if (!containerRef.current?.contains(event.target)) {
         setOpen(false);
+        setSelectedId(null);
       }
     }
 
-    function handleEscape(event) {
-      if (event.key === "Escape") setOpen(false);
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setSelectedId(null);
+        bellRef.current?.focus();
+      }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener(
+        "pointerdown",
+        handleOutsideClick
+      );
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [open]);
 
-  const unreadCount = notifications.filter(
-    (notification) => !notification.read_at
-  ).length;
+  // Move keyboard focus into the popup when it opens.
+  useEffect(() => {
+    if (!open) return;
+
+    panelRef.current?.querySelector("button")?.focus();
+  }, [open, selectedId]);
+
+  function closePopup() {
+    setOpen(false);
+    setSelectedId(null);
+    bellRef.current?.focus();
+  }
+
+  function openRelatedRequest(notification) {
+    if (!notification.service_request_id) return;
+
+    const basePath =
+      portal === "staff" ? "/staff/requests" : "/requests";
+
+    const requestPath = `${basePath}/${encodeURIComponent(
+      notification.service_request_id
+    )}`;
+
+    closePopup();
+    navigate(requestPath);
+  }
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
+    <div ref={containerRef} className={styles.container}>
       <button
+        ref={bellRef}
         type="button"
-        className={styles.notificationButton}
+        className={`${layoutStyles.notificationButton} ${styles.bellButton}`}
+        aria-label={
+          unreadCount > 0
+            ? `Notifications, ${unreadCount} unread`
+            : "View notifications"
+        }
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls="notification-popover"
         onClick={() => {
           setOpen((previous) => !previous);
-          if (!open) loadNotifications();
+          setSelectedId(null);
+
+          if (!open) {
+            void loadNotifications();
+          }
         }}
-        aria-label="View notifications"
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        style={{ border: "none", cursor: "pointer", position: "relative" }}
       >
         <Bell size={22} aria-hidden="true" />
 
         {unreadCount > 0 && (
-          <span
-            style={{
-              position: "absolute",
-              top: -5,
-              right: -5,
-              background: "#e53935",
-              color: "white",
-              borderRadius: "50%",
-              minWidth: 18,
-              height: 18,
-              fontSize: 11,
-              display: "grid",
-              placeItems: "center",
-            }}
-          >
+          <span className={styles.count} aria-hidden="true">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -113,86 +265,149 @@ export default function NotificationBell() {
 
       {open && (
         <section
+          id="notification-popover"
+          ref={panelRef}
+          className={styles.panel}
           role="dialog"
           aria-label="Notifications"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 12px)",
-            right: 0,
-            width: "min(360px, 85vw)",
-            maxHeight: 430,
-            overflowY: "auto",
-            background: "white",
-            color: "#172b4d",
-            borderRadius: 12,
-            border: "1px solid #ddd",
-            boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
-            zIndex: 1000,
-          }}
+          aria-modal="false"
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 16,
-              borderBottom: "1px solid #eee",
-            }}
-          >
-            <strong>Notifications</strong>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close notifications"
-              style={{
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-              }}
-            >
-              <X size={18} />
-            </button>
+          <div className={styles.heading}>
+            <div className={styles.headingLeft}>
+              {selectedNotification && (
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  aria-label="Back to notification list"
+                  onClick={() => setSelectedId(null)}
+                >
+                  <ArrowLeft size={19} />
+                </button>
+              )}
+
+              <h2>
+                {selectedNotification
+                  ? "Notification Details"
+                  : "Notifications"}
+              </h2>
+            </div>
+
+            <div className={styles.headingActions}>
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="Refresh notifications"
+                onClick={() => void loadNotifications()}
+                disabled={loading}
+              >
+                <RefreshCw size={17} />
+              </button>
+
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="Close notifications"
+                onClick={closePopup}
+              >
+                <X size={19} />
+              </button>
+            </div>
           </div>
 
           {loading && notifications.length === 0 && (
-            <p style={{ padding: 16 }}>Loading...</p>
+            <p className={styles.message} role="status">
+              Loading notifications...
+            </p>
           )}
 
           {error && (
-            <p role="alert" style={{ padding: 16 }}>
+            <p className={styles.error} role="alert">
               {error}
             </p>
           )}
 
-          {!loading && !error && notifications.length === 0 && (
-            <p style={{ padding: 16 }}>No notifications yet.</p>
-          )}
-
-          {notifications.map((notification) => (
-            <div
-              key={notification.notification_id}
-              style={{
-                padding: 16,
-                borderBottom: "1px solid #eee",
-                background: notification.read_at
-                  ? "white"
-                  : "#f0f6ff",
-              }}
-            >
-              <strong>
-                Request {notification.event_type}
-              </strong>
-
-              <p style={{ margin: "6px 0", fontSize: 13 }}>
-                Your request status is now{" "}
-                <strong>{notification.status_snapshot}</strong>.
+          {!selectedNotification &&
+            !loading &&
+            !error &&
+            notifications.length === 0 && (
+              <p className={styles.message}>
+                No notifications yet.
               </p>
+            )}
 
-              <small style={{ color: "#64748b" }}>
-                {new Date(notification.created_at).toLocaleString()}
-              </small>
+          {selectedNotification ? (
+            <div className={styles.details}>
+              <h3>{getTitle(selectedNotification)}</h3>
+
+              <p>{getMessage(selectedNotification)}</p>
+
+              <dl className={styles.metadata}>
+                <div>
+                  <dt>Status</dt>
+                  <dd>
+                    {selectedNotification.status_snapshot ??
+                      "Not available"}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt>Received</dt>
+                  <dd>
+                    {formatDate(selectedNotification.created_at)}
+                  </dd>
+                </div>
+              </dl>
+
+              {selectedNotification.service_request_id && (
+                <button
+                  type="button"
+                  className={styles.viewRequest}
+                  onClick={() =>
+                    openRelatedRequest(selectedNotification)
+                  }
+                >
+                  View Request
+                  <ArrowRight size={17} aria-hidden="true" />
+                </button>
+              )}
             </div>
-          ))}
+          ) : (
+            <div className={styles.list}>
+              {notifications.map((notification) => (
+                <button
+                  key={notification.notification_id}
+                  type="button"
+                  className={`${styles.item} ${
+                    !notification.read_at
+                      ? styles.unread
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setSelectedId(notification.notification_id)
+                  }
+                >
+                  <span className={styles.itemTop}>
+                    <strong>{getTitle(notification)}</strong>
+
+                    {!notification.read_at && (
+                      <span
+                        className={styles.unreadDot}
+                        aria-label="Unread"
+                      />
+                    )}
+                  </span>
+
+                  <span className={styles.itemMessage}>
+                    {getMessage(notification)}
+                  </span>
+
+                  <time className={styles.date}>
+                    {formatDate(notification.created_at)}
+                  </time>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       )}
     </div>

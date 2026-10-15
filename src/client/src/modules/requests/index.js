@@ -6,3 +6,11 @@ export { default as MyRequestsPage } from "./ui/MyRequestsPage";
 export {
   default as RequestDetailsPage,
 } from "./ui/RequestDetailsPage";
+
+export {
+  getStaffRequests,
+} from "./repository/supabaseStaffRequestRepository";
+
+export {
+  getStaffRequestDetails,
+} from "./repository/supabaseStaffRequestRepository";
