@@ -1,4 +1,4 @@
-import { fromPostgrestError } from '../../../shared/errors.js';
+import { fromPostgrestError } from '../errors';
 import {
   supabase,
 } from "../../../shared/lib/supabaseClient";

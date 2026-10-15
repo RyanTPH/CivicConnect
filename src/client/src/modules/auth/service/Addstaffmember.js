@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabaseClient'
+import { supabase } from '../../../shared/lib/supabaseClient'
 
 // Descriptions come from your schema map (staff.role).
 export const STAFF_ROLES = [

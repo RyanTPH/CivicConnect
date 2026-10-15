@@ -1,4 +1,4 @@
-import {createAssignmentService} from './service/assignmentService.js';
+import {createAssignmentService} from './service/createAssignmentService.js';
 import {createTeamService} from './service/Teamservice.js';
 import {createSupabaseWorkflowRepository} from './repository/supabaseWorkRepository.js';
 
