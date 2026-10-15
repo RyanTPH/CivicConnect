@@ -139,10 +139,6 @@ export default function RequestForm() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="File a Complaint"
-        description="Report a municipal service issue by completing the form below."
-      />
 
       <div className={styles.content}>
         {savedRequest ? (

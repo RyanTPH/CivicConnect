@@ -80,10 +80,7 @@ export default function ProfilePage({ portal = "requester" }) {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="My Profile"
-        description="View your CivicConnect account information."
-      />
+      
 
       <div className={styles.content}>
         <Card>

@@ -14,3 +14,12 @@ export {
 export {
   getStaffRequestDetails,
 } from "./repository/supabaseStaffRequestRepository";
+
+
+export {
+  assignStaffRequest,
+} from "./repository/supabaseStaffRequestRepository";
+
+export {
+  updateRequestStatus,
+} from "./service/requestStatusService";

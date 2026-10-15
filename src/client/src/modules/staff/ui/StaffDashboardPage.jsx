@@ -57,6 +57,9 @@ export default function StaffDashboardPage() {
   const { access } = useAuth();
   const staffId = access?.staff?.staff_id;
 
+  // Get the signed-in staff member's first name.
+const firstName = access?.staff?.first_name?.trim() || "Staff";
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -147,8 +150,8 @@ export default function StaffDashboardPage() {
   return (
     <section className={styles.page}>
       <PageHeader
-        title="Staff Dashboard"
-        description="Review the municipal service requests available to your staff account."
+        title={`Welcome Back, ${firstName}!`}
+        description="Review and manage your municipal service requests."
       />
 
       {!staffId ? (

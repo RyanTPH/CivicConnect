@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../auth";
-import { getStaffRequestDetails } from "../../requests";
+import { getStaffRequestDetails, updateRequestStatus, assignStaffRequest, } from "../../requests";
 
 import Card from "../../../shared/ui/Card";
 import ErrorBanner from "../../../shared/ui/ErrorBanner";
@@ -40,6 +40,18 @@ function formatDate(value) {
   }).format(date);
 }
 
+
+// General-staff transitions from the current workflow migration.
+const STAFF_STATUS_TRANSITIONS = {
+  Submitted: ["Accepted", "Rejected"],
+  Accepted: ["In Progress"],
+  "In Progress": ["Resolved"],
+  Resolved: ["Closed"],
+  Closed: [],
+  Rejected: [],
+};
+
+
 export default function StaffRequestPage() {
   const { requestId } = useParams();
   const { access } = useAuth();
@@ -52,6 +64,20 @@ export default function StaffRequestPage() {
     error: "",
   });
   const [reloadKey, setReloadKey] = useState(0);
+
+
+  // Keep assignment and status-change forms independent.
+const [claimReason, setClaimReason] = useState("");
+const [claimSaving, setClaimSaving] = useState(false);
+const [claimError, setClaimError] = useState("");
+const [claimMessage, setClaimMessage] = useState("");
+
+const [nextStatus, setNextStatus] = useState("");
+const [statusNote, setStatusNote] = useState("");
+const [statusSaving, setStatusSaving] = useState(false);
+const [statusError, setStatusError] = useState("");
+const [statusMessage, setStatusMessage] = useState("");
+
 
   // Load the selected request without synchronously setting state
   // inside the effect, avoiding cascading-render lint warnings.
@@ -94,6 +120,85 @@ export default function StaffRequestPage() {
     setReloadKey((current) => current + 1);
   }
 
+  // Claim an eligible request using the protected assignment RPC.
+async function handleClaimRequest() {
+  if (!canClaim || claimSaving) return;
+
+  const reason = claimReason.trim();
+
+  setClaimError("");
+  setClaimMessage("");
+
+  if (!reason) {
+    setClaimError("Please provide a reason for claiming this request.");
+    return;
+  }
+
+  setClaimSaving(true);
+
+  try {
+    await assignStaffRequest(
+      request.service_request_id,
+      staffId,
+      reason
+    );
+
+    setClaimReason("");
+    setClaimMessage("Request assigned to you successfully.");
+    reloadDetails();
+  } catch (error) {
+    setClaimError(
+      error?.message ||
+        "Unable to claim this request. It may already be assigned."
+    );
+  } finally {
+    setClaimSaving(false);
+  }
+}
+
+// Change status and refresh the request after a successful RPC.
+async function handleUpdateStatus() {
+  if (
+    !isAssignedToMe ||
+    !selectedNextStatus ||
+    statusSaving
+  ) {
+    return;
+  }
+
+  const note = statusNote.trim();
+
+  setStatusError("");
+  setStatusMessage("");
+
+  if (!note) {
+    setStatusError("Please enter a reason for the status change.");
+    return;
+  }
+
+  setStatusSaving(true);
+
+  try {
+    await updateRequestStatus(
+      request.service_request_id,
+      selectedNextStatus,
+      note
+    );
+
+    setNextStatus("");
+    setStatusNote("");
+    setStatusMessage("Request status updated successfully.");
+    reloadDetails();
+  } catch (error) {
+    setStatusError(
+      error?.message ||
+        "Unable to update the request status. Please try again."
+    );
+  } finally {
+    setStatusSaving(false);
+  }
+}
+
   // A previous request must never appear while another ID is loading.
   const isLoading = loadState.requestId !== requestId;
   const details = loadState.result;
@@ -102,6 +207,22 @@ export default function StaffRequestPage() {
   const isAssignedToMe =
     Boolean(staffId) &&
     request?.assigned_staff_id === staffId;
+
+    // General staff may only claim eligible unassigned requests.
+const canClaim =
+  Boolean(staffId) &&
+  Boolean(request) &&
+  !request.assigned_staff_id &&
+  !["Closed", "Rejected"].includes(request.status);
+
+// Staff may update only requests currently assigned to them.
+const allowedNextStatuses = isAssignedToMe
+  ? STAFF_STATUS_TRANSITIONS[request?.status] ?? []
+  : [];
+
+// Avoid using a status selection from a previous request state.
+const selectedNextStatus =
+  allowedNextStatuses.includes(nextStatus) ? nextStatus : "";
 
   function assignmentLabel() {
     if (!request?.assigned_staff_id) {
@@ -339,23 +460,56 @@ export default function StaffRequestPage() {
                   {assignmentLabel()}
                 </p>
 
-                <p className={styles.muted}>
-                  Staff assignments are recorded against the
-                  service request and its assignment history.
-                </p>
 
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  disabled
-                >
-                  Claim Request
-                </button>
+                {canClaim && (
+  <div className={styles.workflowForm}>
+    <label htmlFor="claim-reason">
+      Reason for Claiming
+    </label>
 
-                <p className={styles.actionNote}>
-                  Claiming requests will be enabled when the
-                  backend prevents unauthorised reassignment.
-                </p>
+    <textarea
+      id="claim-reason"
+      className={styles.workflowInput}
+      value={claimReason}
+      onChange={(event) => {
+        setClaimReason(event.target.value);
+        setClaimError("");
+      }}
+      placeholder="e.g. Assigned to the Water department"
+      rows={3}
+      maxLength={500}
+      disabled={claimSaving}
+      required
+    />
+
+    {claimError && (
+      <p className={styles.workflowError} role="alert">
+        {claimError}
+      </p>
+    )}
+
+    <button
+      type="button"
+      className={styles.secondaryButton}
+      onClick={handleClaimRequest}
+      disabled={claimSaving || !claimReason.trim()}
+    >
+      {claimSaving ? "Claiming..." : "Claim Request"}
+    </button>
+  </div>
+)}
+
+{claimMessage && (
+  <p className={styles.workflowSuccess} role="status">
+    {claimMessage}
+  </p>
+)}
+
+{!canClaim && !isAssignedToMe && (
+  <p className={styles.actionNote}>
+    This request is not available for self-assignment.
+  </p>
+)}
               </Card>
 
               <Card>
@@ -368,26 +522,84 @@ export default function StaffRequestPage() {
                   <StatusBadge status={request.status} />
                 </div>
 
-                <div className={styles.warning}>
-                  <ShieldAlert
-                    size={20}
-                    aria-hidden="true"
-                  />
 
-                  <p>
-                    Status changes are temporarily unavailable
-                    while server-side assignment checks are
-                    being reviewed.
-                  </p>
-                </div>
+{isAssignedToMe && allowedNextStatuses.length > 0 ? (
+  <div className={styles.workflowForm}>
+    <label htmlFor="staff-next-status">
+      Change Status To
+    </label>
 
-                <button
-                  type="button"
-                  className={styles.primaryButton}
-                  disabled
-                >
-                  Update Status
-                </button>
+    <select
+      id="staff-next-status"
+      className={styles.workflowInput}
+      value={selectedNextStatus}
+      onChange={(event) => {
+        setNextStatus(event.target.value);
+        setStatusError("");
+      }}
+      disabled={statusSaving}
+    >
+      <option value="">Select next status</option>
+
+      {allowedNextStatuses.map((status) => (
+        <option key={status} value={status}>
+          {status}
+        </option>
+      ))}
+    </select>
+
+    <label htmlFor="staff-status-note">
+      Reason / Progress Note
+    </label>
+
+    <textarea
+      id="staff-status-note"
+      className={styles.workflowInput}
+      value={statusNote}
+      onChange={(event) => {
+        setStatusNote(event.target.value);
+        setStatusError("");
+      }}
+      placeholder="Describe the action taken or reason for the update"
+      rows={4}
+      maxLength={1000}
+      disabled={statusSaving}
+      required
+    />
+
+    {statusError && (
+      <p className={styles.workflowError} role="alert">
+        {statusError}
+      </p>
+    )}
+
+    <button
+      type="button"
+      className={styles.primaryButton}
+      onClick={handleUpdateStatus}
+      disabled={
+        statusSaving ||
+        !selectedNextStatus ||
+        !statusNote.trim()
+      }
+    >
+      {statusSaving ? "Updating..." : "Update Status"}
+    </button>
+  </div>
+) : (
+  <p className={styles.actionNote}>
+    {!isAssignedToMe
+      ? "Only the assigned staff member can change this request's status."
+      : "No further general-staff status transitions are available."}
+  </p>
+)}
+
+{statusMessage && (
+  <p className={styles.workflowSuccess} role="status">
+    {statusMessage}
+  </p>
+)}
+                
               </Card>
             </aside>
           </div>

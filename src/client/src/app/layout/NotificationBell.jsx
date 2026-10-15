@@ -1,18 +1,10 @@
-﻿
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Bell,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Bell, RefreshCw, X } from "lucide-react";
 
 import { useAuth } from "../../modules/auth";
 import { supabase } from "../../shared/lib/supabaseClient";
-import { observeRequestStatusNotifications } from
-  "../../modules/notifications/service/notificationObserver";
+import { observeRequestStatusNotifications } from "../../modules/notifications/service/notificationObserver";
 
 import layoutStyles from "./AppLayout.module.css";
 import styles from "./NotificationBell.module.css";
@@ -43,10 +35,7 @@ function formatDate(value) {
 }
 
 function getTitle(notification) {
-  return (
-    EVENT_TITLES[notification.event_type] ??
-    "Request Notification"
-  );
+  return EVENT_TITLES[notification.event_type] ?? "Request Notification";
 }
 
 function getMessage(notification) {
@@ -58,9 +47,7 @@ function getMessage(notification) {
 }
 
 // Shared header notification popover for authenticated portals.
-export default function NotificationBell({
-  portal = "requester",
-}) {
+export default function NotificationBell({ portal = "requester" }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id ?? null;
@@ -74,6 +61,7 @@ export default function NotificationBell({
 
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [markReadError, setMarkReadError] = useState("");
 
   const containerRef = useRef(null);
   const bellRef = useRef(null);
@@ -91,12 +79,10 @@ export default function NotificationBell({
   const error = currentState.error;
 
   const selectedNotification = notifications.find(
-    (item) => item.notification_id === selectedId
+    (item) => item.notification_id === selectedId,
   );
 
-  const unreadCount = notifications.filter(
-    (item) => !item.read_at
-  ).length;
+  const unreadCount = notifications.filter((item) => !item.read_at).length;
 
   // Retrieve only notifications authorised by the existing RPC.
   const loadNotifications = useCallback(async () => {
@@ -121,7 +107,7 @@ export default function NotificationBell({
 
     try {
       const { data, error: fetchError } = await supabase.rpc(
-        "get_my_notifications"
+        "get_my_notifications",
       );
 
       if (version !== requestVersion.current) return;
@@ -144,6 +130,35 @@ export default function NotificationBell({
       }));
     }
   }, [userId]);
+
+  // Open the notification and persist its read state in Supabase.
+  async function handleSelectNotification(notification) {
+    setSelectedId(notification.notification_id);
+    setMarkReadError("");
+
+    // Already-read notifications don't require another database call.
+    if (notification.read_at) return;
+
+    if (!supabase) {
+      setMarkReadError("Notifications are not configured.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.rpc("mark_my_notification_read", {
+        p_notification_id: notification.notification_id,
+      });
+
+      if (error) throw error;
+
+      // Read the database state again so the unread count is accurate.
+      await loadNotifications();
+    } catch {
+      setMarkReadError(
+        "This notification could not be marked as read. Please try again.",
+      );
+    }
+  }
 
   // Refresh on mount, successful local status changes and polling.
   useEffect(() => {
@@ -196,10 +211,7 @@ export default function NotificationBell({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener(
-        "pointerdown",
-        handleOutsideClick
-      );
+      document.removeEventListener("pointerdown", handleOutsideClick);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
@@ -220,11 +232,10 @@ export default function NotificationBell({
   function openRelatedRequest(notification) {
     if (!notification.service_request_id) return;
 
-    const basePath =
-      portal === "staff" ? "/staff/requests" : "/requests";
+    const basePath = portal === "staff" ? "/staff/requests" : "/requests";
 
     const requestPath = `${basePath}/${encodeURIComponent(
-      notification.service_request_id
+      notification.service_request_id,
     )}`;
 
     closePopup();
@@ -330,9 +341,7 @@ export default function NotificationBell({
             !loading &&
             !error &&
             notifications.length === 0 && (
-              <p className={styles.message}>
-                No notifications yet.
-              </p>
+              <p className={styles.message}>No notifications yet.</p>
             )}
 
           {selectedNotification ? (
@@ -345,16 +354,13 @@ export default function NotificationBell({
                 <div>
                   <dt>Status</dt>
                   <dd>
-                    {selectedNotification.status_snapshot ??
-                      "Not available"}
+                    {selectedNotification.status_snapshot ?? "Not available"}
                   </dd>
                 </div>
 
                 <div>
                   <dt>Received</dt>
-                  <dd>
-                    {formatDate(selectedNotification.created_at)}
-                  </dd>
+                  <dd>{formatDate(selectedNotification.created_at)}</dd>
                 </div>
               </dl>
 
@@ -362,10 +368,13 @@ export default function NotificationBell({
                 <button
                   type="button"
                   className={styles.viewRequest}
-                  onClick={() =>
-                    openRelatedRequest(selectedNotification)
-                  }
+                  onClick={() => openRelatedRequest(selectedNotification)}
                 >
+                  {markReadError && (
+                    <p className={styles.error} role="alert">
+                      {markReadError}
+                    </p>
+                  )}
                   View Request
                   <ArrowRight size={17} aria-hidden="true" />
                 </button>
@@ -378,22 +387,15 @@ export default function NotificationBell({
                   key={notification.notification_id}
                   type="button"
                   className={`${styles.item} ${
-                    !notification.read_at
-                      ? styles.unread
-                      : ""
+                    !notification.read_at ? styles.unread : ""
                   }`}
-                  onClick={() =>
-                    setSelectedId(notification.notification_id)
-                  }
+                  onClick={() => void handleSelectNotification(notification)}
                 >
                   <span className={styles.itemTop}>
                     <strong>{getTitle(notification)}</strong>
 
                     {!notification.read_at && (
-                      <span
-                        className={styles.unreadDot}
-                        aria-label="Unread"
-                      />
+                      <span className={styles.unreadDot} aria-label="Unread" />
                     )}
                   </span>
 
