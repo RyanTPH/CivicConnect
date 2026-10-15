@@ -32,11 +32,11 @@ export function createSupabaseWorkflowRepository() {
       };
     },
     async getTeamOverview({ role, department, active }) {
-      const rows = await rpc('team_overview', { p_role: role, p_department: department, p_active: active });
+      const rows = await supabase.rpc('team_overview', { p_role: role, p_department: department, p_active: active });
       return rows.map((r) => ({ ...staffName(r), isActive: r.is_active, openTasks: r.open_tasks, overdueTasks: r.overdue_tasks }));
     },
     async getAssignableStaff() {
-      return (await rpc('assignable_staff')).map((r) => ({ ...staffName(r), openTasks: r.open_tasks }));
+      return (await supabase.rpc('assignable_staff')).map((r) => ({ ...staffName(r), openTasks: r.open_tasks }));
     },
     async listRequestsForAssignment({ assignment, category, priority, staffId, limit, offset }) {
       const rows = await supabase.rpc('requests_for_assignment', {
@@ -47,10 +47,10 @@ export function createSupabaseWorkflowRepository() {
       }));
     },
     async assignRequest({ requestId, staffId, reason }) {
-      await rpc('assign_request', { p_request_id: requestId, p_staff_id: staffId, p_reason: reason });
+      await supabase.rpc('assign_request', { p_request_id: requestId, p_staff_id: staffId, p_reason: reason });
     },
     async unassignRequest({ requestId, reason }) {
-      await rpc('unassign_request', { p_request_id: requestId, p_reason: reason });
+      await supabase.rpc('unassign_request', { p_request_id: requestId, p_reason: reason });
     },
     async getStaffTaskSummary(staffId) {
       const [r] = await supabase.rpc('staff_task_summary', { p_staff_id: staffId });
@@ -60,10 +60,10 @@ export function createSupabaseWorkflowRepository() {
       };
     },
     async getStaffTasks(staffId) {
-      return (await rpc('staff_tasks', { p_staff_id: staffId })).map((r) => ({ ...requestRow(r), assignedAt: r.assigned_at }));
+      return (await supabase.rpc('staff_tasks', { p_staff_id: staffId })).map((r) => ({ ...requestRow(r), assignedAt: r.assigned_at }));
     },
     async getStaffAssignmentHistory(staffId) {
-      return (await rpc('staff_assignment_history', { p_staff_id: staffId })).map(historyRow);
+      return (await supabase.rpc('staff_assignment_history', { p_staff_id: staffId })).map(historyRow);
     },
     async getRequestAssignmentHistory(requestId) {
       return (await supabase.rpc('request_assignment_history', { p_request_id: requestId })).map(historyRow);

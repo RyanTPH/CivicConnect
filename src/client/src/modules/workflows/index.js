@@ -1,5 +1,5 @@
 import {createAssignmentService} from './service/assignmentService.js';
-import {createTeamService} from './service/teamService.js';
+import {createTeamService} from './service/Teamservice.js';
 import {createSupabaseWorkflowRepository} from './repository/supabaseWorkRepository.js';
 
 export function createWorkflowModule({
