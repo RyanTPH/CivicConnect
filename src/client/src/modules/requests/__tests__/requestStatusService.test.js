@@ -1,3 +1,4 @@
+﻿import { subscribe } from "../../../shared/events/eventBus";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { updateRequestStatus } from "../service/requestStatusService";
 import { changeRequestStatus } from "../repository/supabaseRequestStatusRepository";
@@ -69,5 +70,47 @@ describe("updateRequestStatus", () => {
     await expect(
       updateRequestStatus("request-123", "Accepted", "Testing")
     ).rejects.toThrow("Permission denied");
+  });
+});
+describe("Status change Observer Pattern", () => {
+  it("publishes an event after a successful status change", async () => {
+    const observer = vi.fn();
+    const unsubscribe = subscribe("request.statusChanged", observer);
+
+    try {
+      changeRequestStatus.mockResolvedValueOnce(undefined);
+
+      await updateRequestStatus(
+        "request-123",
+        "Accepted",
+        "Request approved"
+      );
+
+      expect(observer).toHaveBeenCalledExactlyOnceWith({
+        requestId: "request-123",
+        newStatus: "Accepted",
+      });
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it("does not publish an event when the status change fails", async () => {
+    const observer = vi.fn();
+    const unsubscribe = subscribe("request.statusChanged", observer);
+
+    try {
+      changeRequestStatus.mockRejectedValueOnce(
+        new Error("Database update failed")
+      );
+
+      await expect(
+        updateRequestStatus("request-123", "Accepted", "Testing")
+      ).rejects.toThrow("Database update failed");
+
+      expect(observer).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 });
