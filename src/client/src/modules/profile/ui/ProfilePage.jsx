@@ -8,7 +8,6 @@ import {
 
 import { useAuth } from "../../auth";
 import Card from "../../../shared/ui/Card";
-import PageHeader from "../../../shared/ui/PageHeader";
 import LoadingState from "../../../shared/ui/LoadingState";
 import ErrorBanner from "../../../shared/ui/ErrorBanner";
 
@@ -34,10 +33,17 @@ function formatDate(value) {
 export default function ProfilePage({ portal = "requester" }) {
   const { user, access, loading, accessError } = useAuth();
 
-  const isStaffPortal = portal === "staff";
-  const homePath = isStaffPortal
-    ? "/staff/dashboard"
-    : "/dashboard";
+  // Manager and admin identities are also stored in public.staff.
+const isStaffPortal = ["staff", "manager", "admin"].includes(portal);
+
+  const homePaths = {
+  requester: "/dashboard",
+  staff: "/staff/dashboard",
+  manager: "/manager/dashboard",
+  admin: "/admin/dashboard",
+};
+
+const homePath = homePaths[portal] ?? "/dashboard";
 
   if (loading) {
     return <LoadingState message="Loading your profile..." />;

@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Clock3,
   MessageSquare,
-  ShieldAlert,
   UserRound,
 } from "lucide-react";
 

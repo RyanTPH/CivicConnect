@@ -2,6 +2,8 @@
   Home,
   PlusCircle,
   UserRound,
+  BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 
 // Requester navigation shared by desktop and mobile layouts.
@@ -33,6 +35,35 @@ export const staffNavigation = [
   {
     label: "My Profile",
     path: "/staff/profile",
+    icon: UserRound,
+  },
+];
+
+
+// Manager portal: operational monitoring and oversight.
+export const managerNavigation = [
+  {
+    label: "Management Dashboard",
+    path: "/manager/dashboard",
+    icon: BarChart3,
+  },
+  {
+    label: "My Profile",
+    path: "/manager/profile",
+    icon: UserRound,
+  },
+];
+
+// Admin portal: platform oversight.
+export const adminNavigation = [
+  {
+    label: "Admin Dashboard",
+    path: "/admin/dashboard",
+    icon: ShieldCheck,
+  },
+  {
+    label: "My Profile",
+    path: "/admin/profile",
     icon: UserRound,
   },
 ];

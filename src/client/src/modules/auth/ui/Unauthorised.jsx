@@ -10,6 +10,18 @@ import LoadingState from "../../../shared/ui/LoadingState";
 export default function Unauthorized() {
   const { access, loading } = useAuth();
 
+  const homeByRole = {
+  staff: "/staff/dashboard",
+  manager: "/manager/dashboard",
+  admin: "/admin/dashboard",
+};
+
+const returnPath = access?.staffRole
+  ? homeByRole[access.staffRole]
+  : access?.isRequester
+    ? "/dashboard"
+    : null;
+
   // Wait until the user's current permissions have been resolved.
   if (loading) {
     return <LoadingState message="Checking your account permissions..." />;
@@ -41,7 +53,7 @@ export default function Unauthorized() {
       )}
 
       {access?.isStaff && access.staffRole === "staff" && (
-        <Link to="/staff/dashboard">Return to Staff Dashboard</Link>
+        <Link to={returnPath}>Return to Staff Dashboard</Link>
       )}
     </main>
   );

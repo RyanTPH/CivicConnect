@@ -24,6 +24,7 @@ import {
 
 import { ProfilePage } from "../modules/profile";
 import { StaffDashboardPage, StaffRequestPage, } from "../modules/staff";
+import { ManagementDashboardPage } from "../modules/management";
 import LoadingState from "../shared/ui/LoadingState";
 import ErrorBanner from "../shared/ui/ErrorBanner";
 
@@ -57,7 +58,16 @@ function PortalHomeRedirect() {
     return <Navigate to="/staff/dashboard" replace />;
   }
 
+  if (access?.isStaff && access.staffRole === "manager") {
+  return <Navigate to="/manager/dashboard" replace />;
+}
+
+if (access?.isStaff && access.staffRole === "admin") {
+  return <Navigate to="/admin/dashboard" replace />;
+}
+
   return <Navigate to="/unauthorised" replace />;
+
 }
 
 export default function App() {
@@ -151,6 +161,56 @@ export default function App() {
               />
             </Route>
           </Route>
+
+{/* Management portal: manager accounts only. */}
+<Route
+  element={
+    <ProtectedRoute
+      requiredAccess="staff"
+      allowedStaffRoles={["manager"]}
+    />
+  }
+>
+  <Route element={<AppLayout portal="manager" />}>
+    <Route
+      path="/manager/dashboard"
+      element={
+        <ManagementDashboardPage portal="manager" />
+      }
+    />
+
+    <Route
+      path="/manager/profile"
+      element={<ProfilePage portal="manager" />}
+    />
+  </Route>
+</Route>
+
+
+{/* Administration portal: admin accounts only. */}
+<Route
+  element={
+    <ProtectedRoute
+      requiredAccess="staff"
+      allowedStaffRoles={["admin"]}
+    />
+  }
+>
+  <Route element={<AppLayout portal="admin" />}>
+    <Route
+      path="/admin/dashboard"
+      element={
+        <ManagementDashboardPage portal="admin" />
+      }
+    />
+
+    <Route
+      path="/admin/profile"
+      element={<ProfilePage portal="admin" />}
+    />
+  </Route>
+</Route>
+
         </Route>
 
         <Route

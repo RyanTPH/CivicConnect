@@ -1,14 +1,15 @@
 import NotificationBell from "./NotificationBell";
 import { useCallback, useEffect, useState } from "react";
-import {
-  NavLink,
-  Outlet,
-  useLocation,
-} from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 
 import MobileMenu from "./MobileMenu";
-import { requesterNavigation, staffNavigation } from "./navigation";
+import {
+  requesterNavigation,
+  staffNavigation,
+  managerNavigation,
+  adminNavigation,
+} from "./navigation";
 import styles from "./AppLayout.module.css";
 import { LogoutButton } from "../../modules/auth";
 
@@ -22,6 +23,10 @@ const pageTitles = {
   "/profile": "My Profile",
   "/staff/dashboard": "Staff Dashboard",
   "/staff/profile": "Staff Profile",
+  "/manager/dashboard": "Management Dashboard",
+  "/manager/profile": "Manager Profile",
+  "/admin/dashboard": "Admin Dashboard",
+  "/admin/profile": "Admin Profile",
 };
 
 export default function AppLayout({ portal = "requester" }) {
@@ -30,9 +35,28 @@ export default function AppLayout({ portal = "requester" }) {
   // Select navigation.
   const isStaffPortal = portal === "staff";
 
-  const navigation = isStaffPortal ? staffNavigation : requesterNavigation;
+  // Shared layout with role-specific navigation and home destinations.
+  const portalConfiguration = {
+    requester: {
+      navigation: requesterNavigation,
+      homePath: "/dashboard",
+    },
+    staff: {
+      navigation: staffNavigation,
+      homePath: "/staff/dashboard",
+    },
+    manager: {
+      navigation: managerNavigation,
+      homePath: "/manager/dashboard",
+    },
+    admin: {
+      navigation: adminNavigation,
+      homePath: "/admin/dashboard",
+    },
+  };
 
-  const homePath = isStaffPortal ? "/staff/dashboard" : "/dashboard";
+  const { navigation, homePath } =
+    portalConfiguration[portal] ?? portalConfiguration.requester;
 
   // Remember which route opened the navigation drawer.
   const [menuRoute, setMenuRoute] = useState(null);
