@@ -56,7 +56,7 @@ export default function FormField({
           rows={props.rows || 4}
         />
       ) : as === "select" ? (
-        <select {...commonProps} defaultValue={props.defaultValue ?? ""}>
+        <select {...commonProps}>
           <option value="" disabled>
             {placeholder || "Select an option"}
           </option>

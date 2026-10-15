@@ -6,12 +6,18 @@ import {
 
 import { useAuth } from "../session/useAuth";
 import LoadingState from "../../../shared/ui/LoadingState";
+import ErrorBanner from "../../../shared/ui/ErrorBanner";
 
-// Requires a Supabase login before rendering child routes.
-export default function ProtectedRoute() {
+// Protect routes using authentication and optional portal permissions.
+export default function ProtectedRoute({
+  requiredAccess,
+  allowedStaffRoles,
+}) {
   const {
     user,
+    access,
     loading,
+    accessError,
     isSupabaseConfigured,
   } = useAuth();
 
@@ -19,20 +25,17 @@ export default function ProtectedRoute() {
 
   if (!isSupabaseConfigured) {
     return (
-      <main style={{ padding: "2rem" }} role="alert">
+      <main style={{ padding: "2rem" }}>
         <h1>Supabase configuration required</h1>
-        <p>
-          Add your public Supabase credentials to the
-          frontend .env file and restart Vite.
+        <p role="alert">
+          Check the frontend environment variables.
         </p>
       </main>
     );
   }
 
   if (loading) {
-    return (
-      <LoadingState message="Checking your session..." />
-    );
+    return <LoadingState message="Verifying account access..." />;
   }
 
   if (!user) {
@@ -43,6 +46,41 @@ export default function ProtectedRoute() {
         replace
       />
     );
+  }
+
+  // Authentication-only routes need no database role lookup.
+  if (!requiredAccess) {
+    return <Outlet />;
+  }
+
+
+  if (accessError) {
+    return (
+      <main style={{ padding: "2rem" }}>
+        <ErrorBanner
+          message="Unable to verify your account permissions. Please try again later."
+        />
+      </main>
+    );
+  }
+
+  if (!access) {
+    return <Navigate to="/unauthorised" replace />;
+  }
+
+  if (requiredAccess === "requester" && !access.isRequester) {
+    return <Navigate to="/unauthorised" replace />;
+  }
+
+  if (requiredAccess === "staff") {
+    const permitted =
+      access.isStaff &&
+      (!allowedStaffRoles ||
+        allowedStaffRoles.includes(access.staffRole));
+
+    if (!permitted) {
+      return <Navigate to="/unauthorised" replace />;
+    }
   }
 
   return <Outlet />;
