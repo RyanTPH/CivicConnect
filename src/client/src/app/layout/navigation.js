@@ -1,7 +1,6 @@
 ﻿import {
   Home,
   PlusCircle,
-  Search,
   UserRound,
 } from "lucide-react";
 
