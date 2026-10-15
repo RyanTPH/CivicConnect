@@ -1,0 +1,60 @@
+﻿diff --git a/src/client/src/App.jsx b/src/client/app/App.jsx
+similarity index 100%
+rename from src/client/src/App.jsx
+rename to src/client/app/App.jsx
+diff --git a/src/client/src/features/requests/RequestForm.jsx b/src/client/app/features/requests/RequestForm.jsx
+similarity index 100%
+rename from src/client/src/features/requests/RequestForm.jsx
+rename to src/client/app/features/requests/RequestForm.jsx
+diff --git a/src/client/src/features/requests/requestService.js b/src/client/app/features/requests/requestService.js
+similarity index 100%
+rename from src/client/src/features/requests/requestService.js
+rename to src/client/app/features/requests/requestService.js
+diff --git a/src/client/src/features/requests/requestService.test.js b/src/client/app/features/requests/requestService.test.js
+similarity index 100%
+rename from src/client/src/features/requests/requestService.test.js
+rename to src/client/app/features/requests/requestService.test.js
+diff --git a/src/client/src/features/requests/supabaseRequestRepository.js b/src/client/app/features/requests/supabaseRequestRepository.js
+similarity index 100%
+rename from src/client/src/features/requests/supabaseRequestRepository.js
+rename to src/client/app/features/requests/supabaseRequestRepository.js
+diff --git a/src/client/src/index.css b/src/client/app/index.css
+similarity index 100%
+rename from src/client/src/index.css
+rename to src/client/app/index.css
+diff --git a/src/client/src/lib/supabaseClient.js b/src/client/app/lib/supabaseClient.js
+similarity index 100%
+rename from src/client/src/lib/supabaseClient.js
+rename to src/client/app/lib/supabaseClient.js
+diff --git a/src/client/src/main.jsx b/src/client/app/main.jsx
+similarity index 100%
+rename from src/client/src/main.jsx
+rename to src/client/app/main.jsx
+diff --git a/src/client/app/modules/auth/.gitkeep b/src/client/app/modules/auth/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/client/app/modules/channels/.gitkeep b/src/client/app/modules/channels/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/client/app/modules/notifications/.gitkeep b/src/client/app/modules/notifications/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/client/src/modules/requests/RequestForm.jsx b/src/client/app/modules/requests/RequestForm.jsx
+similarity index 100%
+rename from src/client/src/modules/requests/RequestForm.jsx
+rename to src/client/app/modules/requests/RequestForm.jsx
+diff --git a/src/client/src/modules/requests/requestService.js b/src/client/app/modules/requests/requestService.js
+similarity index 100%
+rename from src/client/src/modules/requests/requestService.js
+rename to src/client/app/modules/requests/requestService.js
+diff --git a/src/client/src/modules/requests/requestService.test.js b/src/client/app/modules/requests/requestService.test.js
+similarity index 100%
+rename from src/client/src/modules/requests/requestService.test.js
+rename to src/client/app/modules/requests/requestService.test.js
+diff --git a/src/client/src/modules/requests/supabaseRequestRepository.js b/src/client/app/modules/requests/supabaseRequestRepository.js
+similarity index 100%
+rename from src/client/src/modules/requests/supabaseRequestRepository.js
+rename to src/client/app/modules/requests/supabaseRequestRepository.js
+diff --git a/src/client/app/modules/workflow/.gitkeep b/src/client/app/modules/workflow/.gitkeep
+new file mode 100644
+index 0000000..e69de29
