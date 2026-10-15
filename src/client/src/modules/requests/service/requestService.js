@@ -1,3 +1,5 @@
+import { fetchMyServiceRequests,fetchMyServiceRequestDetails } from "../repository/supabaseRequestRepository";
+
 
 const VALID_CATEGORIES = [
   "Water and Sanitation",
@@ -49,4 +51,15 @@ export function createServiceRequest({
     description: cleanDescription,
     status: "Submitted",
   };
+}
+
+
+// Retrieve the authenticated requester's requests.
+export async function listMyServiceRequests() {
+  return fetchMyServiceRequests();
+}
+
+// Retrieve an authorised complaint with its history and comments.
+export async function getMyServiceRequestDetails(requestId) {
+  return fetchMyServiceRequestDetails(requestId);
 }

@@ -10,7 +10,7 @@ import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { requesterNavigation } from "./navigation";
 import styles from "./AppLayout.module.css";
-import {LogoutButton} from "../../modules/auth";
+import { LogoutButton } from "../../modules/auth";
 
 // Section labels displayed in the application header.
 const pageTitles = {
@@ -48,22 +48,15 @@ export default function AppLayout() {
       }
     }
 
-    mediaQuery.addEventListener(
-      "change",
-      handleViewportChange
-    );
+    mediaQuery.addEventListener("change", handleViewportChange);
 
     return () => {
-      mediaQuery.removeEventListener(
-        "change",
-        handleViewportChange
-      );
+      mediaQuery.removeEventListener("change", handleViewportChange);
     };
   }, [closeMenu]);
 
   const pageTitle =
-    pathname.startsWith("/requests/") &&
-    pathname !== "/requests/new"
+    pathname.startsWith("/requests/") && pathname !== "/requests/new"
       ? "Request Details"
       : pageTitles[pathname] || "CivicConnect";
 

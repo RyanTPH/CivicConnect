@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 import { useAuth } from "../session/useAuth";
@@ -12,12 +12,7 @@ import styles from "./Login.module.css";
 
 // Public authentication page for CivicConnect.
 export default function Login() {
-  const {
-    user,
-    loading,
-    signIn,
-    isSupabaseConfigured,
-  } = useAuth();
+  const { user, loading, signIn, isSupabaseConfigured, sessionExpired } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,23 +23,20 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Restore the originally requested route after signing in.
-  const from = location.state?.from;
+  const requestedPath = location.state?.from?.pathname;
 
   const destination =
-    from?.pathname?.startsWith("/") &&
-    !from.pathname.startsWith("//") &&
-    from.pathname !== "/login"
-      ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+    requestedPath &&
+    !["/login", "/register", "/unauthorised"].includes(requestedPath)
+      ? requestedPath
       : "/dashboard";
+
 
   if (!isSupabaseConfigured) {
     return (
       <main className={styles.messagePage}>
         <h1>CivicConnect</h1>
-        <ErrorBanner
-          message="Supabase is not configured. Check your frontend .env file and restart the development server."
-        />
+        <ErrorBanner message="Supabase is not configured. Check your frontend .env file and restart the development server." />
       </main>
     );
   }
@@ -71,7 +63,7 @@ export default function Login() {
     } catch {
       // Avoid exposing technical authentication details.
       setError(
-        "Unable to sign in. Check your email and password and try again."
+        "Unable to sign in. Check your email and password and try again.",
       );
     } finally {
       setSubmitting(false);
@@ -86,39 +78,31 @@ export default function Login() {
             <ShieldCheck size={32} aria-hidden="true" />
           </div>
 
-          <h1 className={styles.brandTitle}>
-            CivicConnect
-          </h1>
+          <h1 className={styles.brandTitle}>CivicConnect</h1>
 
-          <p className={styles.brandSubtitle}>
-            CITIZEN SERVICE PORTAL
-          </p>
+          <p className={styles.brandSubtitle}>CITIZEN SERVICE PORTAL</p>
 
           <p className={styles.brandDescription}>
             Connecting communities with municipal services.
           </p>
         </header>
 
-        <section
-          className={styles.loginPanel}
-          aria-labelledby="login-title"
-        >
+        <section className={styles.loginPanel} aria-labelledby="login-title">
           <div className={styles.panelHeading}>
             <h2 id="login-title">Welcome Back</h2>
-            <p>
-              Sign in to manage and track your service requests.
-            </p>
+            <p>Sign in to manage and track your service requests.</p>
           </div>
 
-          <ErrorBanner
-            message={error}
-            onDismiss={() => setError("")}
-          />
+          <ErrorBanner message={error} onDismiss={() => setError("")} />
 
-          <form
-            className={styles.loginForm}
-            onSubmit={handleSubmit}
-          >
+            {sessionExpired && !error && (
+  <p className={styles.sessionNotice} role="status">
+    Your session has expired after 30 minutes of inactivity.
+    Please sign in again to continue.
+  </p>
+)}
+
+          <form className={styles.loginForm} onSubmit={handleSubmit}>
             <FormField
               label="Email Address"
               name="login-email"
@@ -148,9 +132,7 @@ export default function Login() {
                 type="button"
                 className={styles.passwordToggle}
                 onClick={() => setShowPassword((visible) => !visible)}
-                aria-label={
-                  showPassword ? "Hide password" : "Show password"
-                }
+                aria-label={showPassword ? "Hide password" : "Show password"}
                 aria-pressed={showPassword}
               >
                 {showPassword ? (
@@ -161,18 +143,18 @@ export default function Login() {
               </button>
             </div>
 
-            <Button
-              type="submit"
-              fullWidth
-              loading={submitting}
-            >
+            <Button type="submit" fullWidth loading={submitting}>
               {submitting ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
           <p className={styles.supportText}>
-            Need help accessing your account? Contact your
-            municipality's support team.
+            Don't have an account? <Link to="/register">Register here</Link>
+          </p>
+
+          <p className={styles.supportText}>
+            Need help accessing your account? Contact your municipality's
+            support team.
           </p>
         </section>
       </div>
