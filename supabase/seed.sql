@@ -182,8 +182,8 @@ insert into public.attachments
 -- =====================================================================
 -- CC-0001: full lifecycle, Submitted -> Accepted -> In Progress -> Resolved -> Closed
 select pg_temp.act_as('a0000000-0000-0000-0000-000000000004');   -- Thandi
-select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Accepted',    'Reviewed and accepted');
 select public.assign_request       ('e0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000004', 'Roads team');
+select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Accepted',    'Reviewed and accepted');
 select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'In Progress', 'Crew scheduled');
 select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Resolved',    'Pothole filled');
 update public.service_requests
@@ -192,6 +192,7 @@ update public.service_requests
 select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Closed',      'Confirmed with requester');
 
 -- CC-0004: accepted, waiting to be assigned
+select pg_temp.act_as('a0000000-0000-0000-0000-000000000003');   -- Zanele (supervisor)
 select public.change_request_status('e0000000-0000-0000-0000-000000000004', 'Accepted', 'Added to the collection backlog');
 
 -- CC-0007: rejected as a duplicate, then closed by the supervisor
@@ -199,8 +200,8 @@ select public.change_request_status('e0000000-0000-0000-0000-000000000007', 'Rej
 
 -- CC-0002: in progress and overdue
 select pg_temp.act_as('a0000000-0000-0000-0000-000000000005');   -- Pieter
-select public.change_request_status('e0000000-0000-0000-0000-000000000002', 'Accepted',    'Water team notified');
 select public.assign_request       ('e0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000005');
+select public.change_request_status('e0000000-0000-0000-0000-000000000002', 'Accepted',    'Water team notified');
 select public.change_request_status('e0000000-0000-0000-0000-000000000002', 'In Progress', 'Waiting for a replacement valve');
 
 -- CC-0005: supervisor accepts and assigns to Pieter, who starts work
@@ -213,8 +214,8 @@ select public.change_request_status('e0000000-0000-0000-0000-000000000005', 'In 
 
 -- CC-0008: Sipho works it, then leaves; the supervisor reassigns it (history keeps his name)
 select pg_temp.act_as('a0000000-0000-0000-0000-000000000007');   -- Sipho
-select public.change_request_status('e0000000-0000-0000-0000-000000000008', 'Accepted',    'Electrical fault suspected');
 select public.assign_request       ('e0000000-0000-0000-0000-000000000008', 'c0000000-0000-0000-0000-000000000007');
+select public.change_request_status('e0000000-0000-0000-0000-000000000008', 'Accepted',    'Electrical fault suspected');
 select public.change_request_status('e0000000-0000-0000-0000-000000000008', 'In Progress', 'Controller unit ordered');
 
 select pg_temp.act_as('a0000000-0000-0000-0000-000000000001');   -- Admin soft-deletes Sipho and blocks his login
