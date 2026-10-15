@@ -46,6 +46,54 @@ begin
 end $$;
 
 -- ---------- generic audit trigger ----------
+CREATE OR REPLACE FUNCTION public.audit_row()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_pk    text := tg_argv[0];
+  v_old   jsonb;
+  v_new   jsonb;
+  v_row   jsonb;
+  v_actor uuid := auth.uid();
+BEGIN
+  IF tg_op = 'INSERT' THEN
+    v_new := to_jsonb(new);
+    v_row := v_new;
+  ELSIF tg_op = 'DELETE' THEN
+    v_old := to_jsonb(old);
+    v_row := v_old;
+  ELSE
+    v_old := to_jsonb(old);
+    v_new := to_jsonb(new);
+    v_row := v_new;
+
+    IF v_old = v_new THEN
+      RETURN NULL;
+    END IF;
+  END IF;
+
+  INSERT INTO public.audit_log
+    (actor_user_id, actor_type, action, entity_type, entity_id,
+     service_request_id, old_values, new_values, correlation_id)
+  VALUES
+    (
+      v_actor,
+      (CASE WHEN v_actor IS NULL THEN 'system' ELSE 'user' END)::public.audit_actor_type,
+      lower(tg_op),
+      tg_table_name,
+      (v_row ->> v_pk)::uuid,
+      nullif(v_row ->> 'service_request_id', '')::uuid,
+      v_old,
+      v_new,
+      md5(txid_current()::text)::uuid
+    );
+
+  RETURN NULL;
+END;
+$function$;
 
 create trigger trg_audit_requesters         after insert or update or delete on public.requesters
   for each row execute function public.audit_row('requester_id');
