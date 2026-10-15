@@ -175,3 +175,231 @@ export async function saveServiceRequest(request) {
     "The service request could not be saved."
   );
 }
+
+
+// Read only the signed-in requester's service requests.
+export async function fetchMyServiceRequests() {
+  if (!supabase) {
+    throw requestError(
+      "CONFIGURATION_ERROR",
+      "Supabase is not configured."
+    );
+  }
+
+  // Confirm the currently authenticated user.
+  const { data: authData, error: authError } =
+    await supabase.auth.getUser();
+
+  const user = authData?.user;
+
+  if (authError || !user) {
+    throw requestError(
+      "AUTH_REQUIRED",
+      "You must sign in to view your requests."
+    );
+  }
+
+  // Map auth.users.id to requesters.requester_id.
+  const { data: requester, error: requesterError } =
+    await supabase
+      .from("requesters")
+      .select("requester_id")
+      .eq("user_id", user.id)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+  if (
+    requesterError?.code === "42501" ||
+    requesterError?.status === 403
+  ) {
+    throw requestError(
+      "PERMISSION_DENIED",
+      "You do not have permission to access your requester profile."
+    );
+  }
+
+  if (requesterError) {
+    throw requestError(
+      "DATABASE_ERROR",
+      "Your requester profile could not be loaded."
+    );
+  }
+
+  if (!requester) {
+    throw requestError(
+      "PROFILE_NOT_FOUND",
+      "No active requester profile was found."
+    );
+  }
+
+  // RLS enforces ownership independently of this filter.
+  const { data: requests, error: requestsError } =
+    await supabase
+      .from("service_requests")
+      .select(
+        "service_request_id, reference_number, title, description, category, status, priority, created_at"
+      )
+      .eq("requester_id", requester.requester_id)
+      .order("created_at", { ascending: false });
+
+  if (
+    requestsError?.code === "42501" ||
+    requestsError?.status === 403
+  ) {
+    throw requestError(
+      "PERMISSION_DENIED",
+      "You do not have permission to view these requests."
+    );
+  }
+
+  if (requestsError) {
+    throw requestError(
+      "DATABASE_ERROR",
+      "Your requests could not be loaded."
+    );
+  }
+
+  // An empty array is a valid result, not an error.
+  return requests ?? [];
+}
+
+// Read one complaint belonging to the signed-in requester.
+export async function fetchMyServiceRequestDetails(requestId) {
+  if (!supabase) {
+    throw requestError(
+      "CONFIGURATION_ERROR",
+      "Supabase is not configured."
+    );
+  }
+
+  // Route IDs must be valid UUIDs.
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (!uuidPattern.test(requestId ?? "")) {
+    throw requestError(
+      "INVALID_REQUEST_ID",
+      "The request identifier is invalid."
+    );
+  }
+
+  const { data: authData, error: authError } =
+    await supabase.auth.getUser();
+
+  if (authError || !authData?.user) {
+    throw requestError(
+      "AUTH_REQUIRED",
+      "You must sign in to view request details."
+    );
+  }
+
+  // Resolve the CivicConnect requester ID.
+  const { data: requester, error: requesterError } =
+    await supabase
+      .from("requesters")
+      .select("requester_id")
+      .eq("user_id", authData.user.id)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+  if (requesterError?.code === "42501") {
+    throw requestError(
+      "PERMISSION_DENIED",
+      "Request access was denied."
+    );
+  }
+
+  if (requesterError) {
+    throw requestError(
+      "DATABASE_ERROR",
+      "Unable to load your requester profile."
+    );
+  }
+
+  if (!requester) {
+    throw requestError(
+      "PROFILE_NOT_FOUND",
+      "Your requester profile could not be found."
+    );
+  }
+
+  // Fetch only a request owned by this requester.
+  const { data: request, error: requestErrorResult } =
+    await supabase
+      .from("service_requests")
+      .select(
+        [
+          "service_request_id",
+          "reference_number",
+          "requester_id",
+          "title",
+          "description",
+          "category",
+          "status",
+          "priority",
+          "created_at",
+          "received_at",
+          "updated_at",
+          "resolved_at",
+          "closed_at",
+          "resolution_summary",
+        ].join(",")
+      )
+      .eq("service_request_id", requestId)
+      .eq("requester_id", requester.requester_id)
+      .maybeSingle();
+
+  if (requestErrorResult?.code === "42501") {
+    throw requestError(
+      "PERMISSION_DENIED",
+      "Request access was denied."
+    );
+  }
+
+  if (requestErrorResult) {
+    throw requestError(
+      "DATABASE_ERROR",
+      "Unable to load this request."
+    );
+  }
+
+  if (!request) {
+    throw requestError(
+      "NOT_FOUND",
+      "This request was not found or is not accessible."
+    );
+  }
+
+  // Related sections are loaded separately so the main
+  // request can still display if a secondary query fails.
+  const [historyResult, commentsResult] = await Promise.all([
+    supabase
+      .from("request_status_history")
+      .select(
+        "request_status_history_id, from_status, to_status, note, changed_at"
+      )
+      .eq("service_request_id", requestId)
+      .order("changed_at", { ascending: true }),
+
+    supabase
+      .from("comments")
+      .select(
+        "comment_id, comment_text, author_user_id, date_created"
+      )
+      .eq("service_request_id", requestId)
+      .eq("is_internal", false)
+      .order("date_created", { ascending: true }),
+  ]);
+
+  return {
+    request,
+    history: historyResult.error
+      ? []
+      : (historyResult.data ?? []),
+    comments: commentsResult.error
+      ? []
+      : (commentsResult.data ?? []),
+    historyUnavailable: Boolean(historyResult.error),
+    commentsUnavailable: Boolean(commentsResult.error),
+  };
+}

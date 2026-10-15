@@ -122,12 +122,6 @@ textarea.formControl {
   white-space: nowrap;
 }
 
-.statusPending {
-  background: var(--color-danger-bg);
-  color: #a7192a;
-  border-color: #ffc5cd;
-}
-
 .statusProgress {
   background: var(--color-warning-bg);
   color: #9c4600;
@@ -140,15 +134,31 @@ textarea.formControl {
   border-color: #a5ebbd;
 }
 
-.statusCancelled {
-  background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
-}
-
 .statusUnknown {
   background: var(--color-info-bg);
   color: var(--color-info);
 }
+
+/* CivicConnect request lifecycle status styles. */
+
+.statusInfo {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border-color: var(--color-border);
+}
+
+.statusClosed {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.statusRejected {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-border);
+}
+
 
 /* Cards */
 

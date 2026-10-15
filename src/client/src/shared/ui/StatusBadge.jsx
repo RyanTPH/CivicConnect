@@ -1,19 +1,26 @@
 import {
-  Clock3,
-  LoaderCircle,
   CheckCircle2,
-  XCircle,
+  CircleCheck,
   CircleHelp,
+  LoaderCircle,
+  LockKeyhole,
+  Send,
+  XCircle,
 } from "lucide-react";
 
 import styles from "./UI.module.css";
 
 // Maps request statuses to accessible labels and visual indicators.
 const statusConfig = {
-  pending: {
-    label: "Pending",
-    icon: Clock3,
-    className: styles.statusPending,
+  submitted: {
+    label: "Submitted",
+    icon: Send,
+    className: styles.statusInfo,
+  },
+  accepted: {
+    label: "Accepted",
+    icon: CircleCheck,
+    className: styles.statusInfo,
   },
   in_progress: {
     label: "In Progress",
@@ -27,13 +34,13 @@ const statusConfig = {
   },
   closed: {
     label: "Closed",
-    icon: CheckCircle2,
-    className: styles.statusResolved,
+    icon: LockKeyhole,
+    className: styles.statusClosed,
   },
-  cancelled: {
-    label: "Cancelled",
+  rejected: {
+    label: "Rejected",
     icon: XCircle,
-    className: styles.statusCancelled,
+    className: styles.statusRejected,
   },
 };
 

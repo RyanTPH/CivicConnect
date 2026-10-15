@@ -6,3 +6,5 @@ export { useAuth } from "./session/useAuth";
 export { default as Login } from "./ui/Login";
 export { default as LogoutButton } from "./ui/LogoutButton.jsx";
 export { default as ProtectedRoute } from "./ui/ProtectedRoute";
+export { default as Unauthorised } from "./ui/Unauthorised";
+export { default as Register } from "./ui/Register";

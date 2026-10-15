@@ -1,12 +1,10 @@
 ﻿import {
   Home,
-  FileText,
   PlusCircle,
-  Search,
   UserRound,
 } from "lucide-react";
 
-// Shared requester navigation used by mobile and desktop layouts.
+// Requester navigation shared by desktop and mobile layouts.
 export const requesterNavigation = [
   {
     label: "Dashboard",
@@ -17,16 +15,6 @@ export const requesterNavigation = [
     label: "File a Complaint",
     path: "/requests/new",
     icon: PlusCircle,
-  },
-  {
-    label: "My Requests",
-    path: "/requests",
-    icon: FileText,
-  },
-  {
-    label: "Track Request",
-    path: "/track",
-    icon: Search,
   },
   {
     label: "Profile",

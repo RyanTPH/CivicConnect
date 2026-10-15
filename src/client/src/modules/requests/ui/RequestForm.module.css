@@ -1,0 +1,155 @@
+/* CivicConnect File a Complaint screen. */
+
+.page {
+  width: 100%;
+}
+
+.content {
+  width: 100%;
+  max-width: 780px;
+}
+
+.sectionHeading {
+  margin-bottom: var(--space-6);
+}
+
+.sectionHeading h2 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+}
+
+.sectionHeading p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+}
+
+.notice svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.notice p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.reviewNotice {
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-success-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cancelLink,
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.cancelLink {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.cancelLink:hover {
+  background: var(--color-surface-muted);
+}
+
+.primaryLink {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.primaryLink:hover {
+  background: var(--color-primary-hover);
+}
+
+.success {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.success > svg {
+  color: var(--color-success);
+}
+
+.success h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-xl);
+}
+
+.success p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.reference {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+}
+
+.reference span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.reference strong {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
