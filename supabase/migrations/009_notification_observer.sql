@@ -1,4 +1,5 @@
-﻿-- M3: In-app notifications for service request status changes.
+﻿
+-- M3: In-app notifications for service request status changes.
 -- Database trigger handles persistence; JavaScript Observer Pattern handles UI updates.
 
 -- Remove the older, faulty history notification trigger if it exists.
@@ -25,8 +26,10 @@ BEGIN
     FROM public.requesters r
     WHERE r.requester_id = NEW.requester_id;
 
+    -- Residents without login accounts cannot receive in-app notifications.
+    -- Allow their request status to change without creating a notification.
     IF v_recipient_user_id IS NULL THEN
-        RAISE EXCEPTION 'Requester user not found for notification';
+        RETURN NEW;
     END IF;
 
     v_event_type := CASE NEW.status::text
