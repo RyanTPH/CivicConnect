@@ -1,8 +1,12 @@
 import { fromPostgrestError } from '../../../shared/errors.js';
+import {
+  isSupabaseConfigured,
+  supabase,
+} from "../../../shared/lib/supabaseClient";
 
 // The only file that knows the database function names and column names for the
 // manager screens. Services depend on the shape this returns, not on Supabase.
-export function createSupabaseWorkflowRepository({ supabase }) {
+export function createSupabaseWorkflowRepository() {
   async function rpc(fn, args = {}) {
     const { data, error } = await supabase.rpc(fn, args);
     if (error) throw fromPostgrestError(error);
@@ -21,7 +25,7 @@ export function createSupabaseWorkflowRepository({ supabase }) {
 
   return {
     async getManagerSummary() {
-      const [r] = await rpc('manager_summary');
+      const [r] = await supabase.rpc('manager_summary');
       return r && {
         unassignedRequests: r.unassigned_requests, activeStaff: r.active_staff, inactiveStaff: r.inactive_staff,
         openTasks: r.open_tasks, overdueTasks: r.overdue_tasks,
@@ -35,7 +39,7 @@ export function createSupabaseWorkflowRepository({ supabase }) {
       return (await rpc('assignable_staff')).map((r) => ({ ...staffName(r), openTasks: r.open_tasks }));
     },
     async listRequestsForAssignment({ assignment, category, priority, staffId, limit, offset }) {
-      const rows = await rpc('requests_for_assignment', {
+      const rows = await supabase.rpc('requests_for_assignment', {
         p_assignment: assignment, p_category: category, p_priority: priority, p_staff_id: staffId, p_limit: limit, p_offset: offset,
       });
       return rows.map((r) => ({
@@ -49,7 +53,7 @@ export function createSupabaseWorkflowRepository({ supabase }) {
       await rpc('unassign_request', { p_request_id: requestId, p_reason: reason });
     },
     async getStaffTaskSummary(staffId) {
-      const [r] = await rpc('staff_task_summary', { p_staff_id: staffId });
+      const [r] = await supabase.rpc('staff_task_summary', { p_staff_id: staffId });
       return r && {
         ...staffName(r), isActive: r.is_active, deletedAt: r.deleted_at,
         assignedOpen: r.assigned_open, inProgress: r.in_progress, overdue: r.overdue, resolved: r.resolved,
@@ -62,7 +66,7 @@ export function createSupabaseWorkflowRepository({ supabase }) {
       return (await rpc('staff_assignment_history', { p_staff_id: staffId })).map(historyRow);
     },
     async getRequestAssignmentHistory(requestId) {
-      return (await rpc('request_assignment_history', { p_request_id: requestId })).map(historyRow);
+      return (await supabase.rpc('request_assignment_history', { p_request_id: requestId })).map(historyRow);
     },
   };
 }
