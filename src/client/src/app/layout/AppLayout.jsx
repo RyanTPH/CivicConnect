@@ -1,10 +1,11 @@
+import NotificationBell from "./NotificationBell";
 import { useCallback, useEffect, useState } from "react";
 import {
   NavLink,
   Outlet,
   useLocation,
 } from "react-router-dom";
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import MobileMenu from "./MobileMenu";
 import { requesterNavigation } from "./navigation";
@@ -120,13 +121,7 @@ export default function AppLayout() {
             </div>
           </div>
 
-          <NavLink
-            to="/notifications"
-            className={styles.notificationButton}
-            aria-label="View notifications"
-          >
-            <Bell size={22} aria-hidden="true" />
-          </NavLink>
+          <NotificationBell />
         </header>
 
         {/* Each page supplies its own h1 via PageHeader */}
