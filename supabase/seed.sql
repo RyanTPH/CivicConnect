@@ -182,8 +182,8 @@ insert into public.attachments
 -- =====================================================================
 -- CC-0001: full lifecycle, Submitted -> Accepted -> In Progress -> Resolved -> Closed
 select pg_temp.act_as('a0000000-0000-0000-0000-000000000004');   -- Thandi
-select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Accepted',    'Reviewed and accepted');
 select public.assign_request       ('e0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000004', 'Roads team');
+select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Accepted',    'Reviewed and accepted');
 select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'In Progress', 'Crew scheduled');
 select public.change_request_status('e0000000-0000-0000-0000-000000000001', 'Resolved',    'Pothole filled');
 update public.service_requests
