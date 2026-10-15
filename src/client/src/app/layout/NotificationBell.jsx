@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
+﻿
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, X } from "lucide-react";
 import { supabase } from "../../shared/lib/supabaseClient";
 import { observeRequestStatusNotifications } from "../../modules/notifications/service/notificationObserver";
@@ -34,7 +35,7 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    loadNotifications();
+    const initialLoad = setTimeout(loadNotifications, 0);
 
     const unsubscribe = observeRequestStatusNotifications(
       loadNotifications
@@ -43,6 +44,7 @@ export default function NotificationBell() {
     const interval = setInterval(loadNotifications, 15000);
 
     return () => {
+      clearTimeout(initialLoad);
       unsubscribe();
       clearInterval(interval);
     };
