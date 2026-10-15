@@ -1,6 +1,5 @@
 import { fromPostgrestError } from '../../../shared/errors.js';
 import {
-  isSupabaseConfigured,
   supabase,
 } from "../../../shared/lib/supabaseClient";
 
