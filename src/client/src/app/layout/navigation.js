@@ -1,9 +1,8 @@
-import {
+﻿import {
   Home,
   FileText,
   PlusCircle,
   Search,
-  Bell,
   UserRound,
 } from "lucide-react";
 
@@ -28,11 +27,6 @@ export const requesterNavigation = [
     label: "Track Request",
     path: "/track",
     icon: Search,
-  },
-  {
-    label: "Notifications",
-    path: "/notifications",
-    icon: Bell,
   },
   {
     label: "Profile",

@@ -1,4 +1,5 @@
 import { changeRequestStatus } from "../repository/supabaseRequestStatusRepository";
+import { publish } from "../../../shared/events/eventBus";
 
 const VALID_STATUSES = [
   "Submitted",
@@ -18,5 +19,13 @@ export async function updateRequestStatus(requestId, newStatus, note) {
     throw new Error("A note is required when changing request status.");
   }
 
-  return changeRequestStatus(requestId, newStatus.trim(), note.trim());
+  const status = newStatus.trim();
+
+  await changeRequestStatus(requestId, status, note.trim());
+
+  // Publish only after the database confirms the change.
+  publish("request.statusChanged", {
+    requestId,
+    newStatus: status,
+  });
 }
