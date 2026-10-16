@@ -1,12 +1,22 @@
 import { supabase } from '../../../shared/lib/supabaseClient'
 
-// Descriptions come from your schema map (staff.role).
 export const STAFF_ROLES = [
-  { value: 'staff', label: 'Staff', hint: 'Processes assigned requests.' },
-  { value: 'supervisor', label: 'Supervisor', hint: 'Also assigns and reassigns requests.' },
-  { value: 'manager', label: 'Manager', hint: 'Also sees dashboards and reports.' },
-  { value: 'admin', label: 'Admin', hint: 'Maintains the platform and can change roles.' },
-]
+  {
+    value: "staff",
+    label: "General Staff",
+    hint: "Processes assigned service requests.",
+  },
+  {
+    value: "manager",
+    label: "Manager",
+    hint: "Oversees staff, assignments and service performance.",
+  },
+  {
+    value: "admin",
+    label: "Administrator",
+    hint: "Manages staff accounts and platform administration.",
+  },
+];
 
 export class AddStaffError extends Error {
   constructor(message, status, fields) {

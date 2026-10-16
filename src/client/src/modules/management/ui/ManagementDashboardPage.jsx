@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { createWorkflowModule } from "../../workflows";
 import {
   AlertTriangle,
-  CheckCircle2,
   ClipboardList,
-  LockKeyhole,
   RefreshCw,
   Search,
+  UserCheck,
+  UserX,
+  ListTodo,
 } from "lucide-react";
 
 import { useAuth } from "../../auth";
@@ -65,6 +68,8 @@ function isOverdue(request, now) {
   return Number.isFinite(dueDate) && dueDate < now;
 }
 
+const workflow = createWorkflowModule();
+
 // Shared read-only overview for manager and admin portals.
 export default function ManagementDashboardPage({ portal = "manager" }) {
   const { access } = useAuth();
@@ -72,6 +77,7 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
   const [result, setResult] = useState({
     loading: true,
     requests: [],
+    summary: null,
     error: "",
   });
   const [reloadKey, setReloadKey] = useState(0);
@@ -94,14 +100,19 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
 
     let cancelled = false;
 
+    // Load authoritative summary figures and the monitoring list.
     async function loadRequests() {
       try {
-        const requests = await getStaffRequests();
+        const [requests, summary] = await Promise.all([
+          getStaffRequests(),
+          workflow.team.getSummary(),
+        ]);
 
         if (!cancelled) {
           setResult({
             loading: false,
             requests,
+            summary,
             error: "",
           });
         }
@@ -110,6 +121,7 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
           setResult({
             loading: false,
             requests: [],
+            summary: null,
             error: "Unable to load the management overview.",
           });
         }
@@ -127,19 +139,7 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
   const [asOf, setAsOf] = useState(() => Date.now());
   const now = asOf;
 
-  const summary = useMemo(() => {
-    const requests = result.requests;
-
-    return {
-      total: requests.length,
-      open: requests.filter((request) => OPEN_STATUSES.has(request.status))
-        .length,
-      overdue: requests.filter((request) => isOverdue(request, now)).length,
-      resolved: requests.filter((request) => request.status === "Resolved")
-        .length,
-      closed: requests.filter((request) => request.status === "Closed").length,
-    };
-  }, [result.requests, now]);
+  const summary = result.summary;
 
   const visibleRequests = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -181,7 +181,6 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
   ]);
 
   function refresh() {
-
     setAsOf(Date.now());
 
     setResult((current) => ({
@@ -196,27 +195,28 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
   const overviewCards = [
     {
       label: "Open Requests",
-      value: summary.open,
+      value: summary?.openTasks ?? 0,
       icon: ClipboardList,
-      filter: "open",
     },
     {
       label: "Overdue Requests",
-      value: summary.overdue,
+      value: summary?.overdueTasks ?? 0,
       icon: AlertTriangle,
-      filter: "overdue",
     },
     {
-      label: "Resolved Requests",
-      value: summary.resolved,
-      icon: CheckCircle2,
-      filter: "resolved",
+      label: "Unassigned Requests",
+      value: summary?.unassignedRequests ?? 0,
+      icon: ListTodo,
     },
     {
-      label: "Closed Requests",
-      value: summary.closed,
-      icon: LockKeyhole,
-      filter: "closed",
+      label: "Active Staff",
+      value: summary?.activeStaff ?? 0,
+      icon: UserCheck,
+    },
+    {
+      label: "Inactive Staff",
+      value: summary?.inactiveStaff ?? 0,
+      icon: UserX,
     },
   ];
 
@@ -256,33 +256,17 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
         </Card>
       ) : (
         <>
-          <p className={styles.context}>
-            Showing statistics for {summary.total} accessible requests returned
-            by the service.
-          </p>
-
           <div className={styles.summaryGrid}>
             {overviewCards.map((item) => {
               const Icon = item.icon;
 
               return (
                 <Card key={item.label}>
-                  <button
-                    type="button"
-                    className={styles.summaryCard}
-                    onClick={() => {
-                      setMonitorFilter(item.filter);
-                      document
-                        .getElementById("management-requests")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                        });
-                    }}
-                  >
+                  <div className={styles.summaryCard}>
                     <Icon size={24} aria-hidden="true" />
                     <strong>{item.value}</strong>
                     <span>{item.label}</span>
-                  </button>
+                  </div>
                 </Card>
               );
             })}
@@ -300,6 +284,12 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
                 <RefreshCw size={17} aria-hidden="true" />
                 Refresh
               </button>
+              <Link
+                to={`/${portal}/assignments`}
+                className={styles.refreshButton}
+              >
+                Manage Assignments
+              </Link>
             </div>
 
             <Card>
@@ -396,6 +386,13 @@ export default function ManagementDashboardPage({ portal = "manager" }) {
                         </span>
 
                         <h3>{request.title}</h3>
+
+                        <Link
+                          to={`/${portal}/requests/${request.service_request_id}`}
+                          className={styles.detailsLink}
+                        >
+                          View Request Details
+                        </Link>
 
                         <p>
                           {request.category} · {formatDate(request.created_at)}

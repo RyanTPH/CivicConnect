@@ -11,6 +11,7 @@ import AppLayout from "./layout/AppLayout.jsx";
 import {
   Login,
   Register,
+  SetPassword,
   ProtectedRoute,
   Unauthorised,
   useAuth,
@@ -24,7 +25,18 @@ import {
 
 import { ProfilePage } from "../modules/profile";
 import { StaffDashboardPage, StaffRequestPage, } from "../modules/staff";
-import { ManagementDashboardPage } from "../modules/management";
+
+import { 
+  ManagementDashboardPage, 
+  TeamOverviewPage, 
+  AssignmentManagementPage, 
+  ManagementReportsPage, 
+  StaffDetailsPage,
+  ManagementRequestDetailsPage, 
+} from "../modules/management";
+
+import { AddStaffPage } from "../modules/admin";
+
 import LoadingState from "../shared/ui/LoadingState";
 import ErrorBanner from "../shared/ui/ErrorBanner";
 
@@ -77,6 +89,10 @@ export default function App() {
         {/* Public authentication pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+  path="/set-password"
+  element={<SetPassword />}
+/>
 
         {/* All routes below require authentication */}
         <Route element={<ProtectedRoute />}>
@@ -183,7 +199,39 @@ export default function App() {
       path="/manager/profile"
       element={<ProfilePage portal="manager" />}
     />
+
+    <Route
+  path="/manager/team"
+  element={<TeamOverviewPage />}
+/>
+
+<Route
+  path="/manager/assignments"
+  element={
+    <AssignmentManagementPage portal="manager" />
+  }
+/>
+
+<Route
+  path="/manager/reports"
+  element={<ManagementReportsPage />}
+/>
+
+<Route
+  path="/manager/team/:staffId"
+  element={<StaffDetailsPage portal="manager" />}
+/>
+
+<Route
+  path="/manager/requests/:requestId"
+  element={
+    <ManagementRequestDetailsPage portal="manager" />
+  }
+/>
+
+
   </Route>
+
 </Route>
 
 
@@ -208,7 +256,48 @@ export default function App() {
       path="/admin/profile"
       element={<ProfilePage portal="admin" />}
     />
+
+
+<Route
+  path="/admin/team"
+  element={<TeamOverviewPage />}
+/>
+
+<Route
+  path="/admin/assignments"
+  element={
+    <AssignmentManagementPage portal="admin" />
+  }
+/>
+
+<Route
+  path="/admin/reports"
+  element={<ManagementReportsPage />}
+/>
+
+
+<Route
+  path="/admin/team/:staffId"
+  element={<StaffDetailsPage portal="admin" />}
+/>
+
+<Route
+  path="/admin/staff/add"
+  element={<AddStaffPage />}
+/>
+
+<Route
+  path="/admin/requests/:requestId"
+  element={
+    <ManagementRequestDetailsPage portal="admin" />
+  }
+/>
+
+
   </Route>
+
+
+
 </Route>
 
         </Route>

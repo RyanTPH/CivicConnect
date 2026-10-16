@@ -4,6 +4,9 @@
   UserRound,
   BarChart3,
   ShieldCheck,
+  UsersRound,
+  ClipboardList,
+  UserPlus,
 } from "lucide-react";
 
 // Requester navigation shared by desktop and mobile layouts.
@@ -45,9 +48,24 @@ export const managerNavigation = [
   {
     label: "Management Dashboard",
     path: "/manager/dashboard",
-    icon: BarChart3,
+    icon: ShieldCheck,
   },
   {
+  label: "Team Overview",
+  path: "/manager/team",
+  icon: UsersRound,
+},
+{
+  label: "Manage Assignments",
+  path: "/manager/assignments",
+  icon: ClipboardList,
+},
+{
+  label: "Reports",
+  path: "/manager/reports",
+  icon: BarChart3,
+},
+{
     label: "My Profile",
     path: "/manager/profile",
     icon: UserRound,
@@ -62,6 +80,26 @@ export const adminNavigation = [
     icon: ShieldCheck,
   },
   {
+  label: "Team Overview",
+  path: "/admin/team",
+  icon: UsersRound,
+},
+{
+  label: "Add Staff Member",
+  path: "/admin/staff/add",
+  icon: UserPlus,
+},
+{
+  label: "Manage Assignments",
+  path: "/admin/assignments",
+  icon: ClipboardList,
+},
+{
+  label: "Reports",
+  path: "/admin/reports",
+  icon: BarChart3,
+},
+{
     label: "My Profile",
     path: "/admin/profile",
     icon: UserRound,

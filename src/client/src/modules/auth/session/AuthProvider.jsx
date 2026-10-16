@@ -107,6 +107,31 @@ useInactivityLogout({
     };
   }, []);
 
+
+  // Register a requester through Supabase Auth.
+  // The database trigger creates the matching requester profile.
+  async function signUp({ firstName, lastName, email, password }) {
+    if (!supabase) {
+      throw new Error("Supabase is not configured.");
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) throw error;
+
+    return data;
+  }
+
   // Sign in using Supabase email/password authentication.
   async function signIn(email, password) {
     if (!supabase) {
@@ -147,6 +172,7 @@ useInactivityLogout({
         accessError,
         isSupabaseConfigured,
         sessionExpired,
+        signUp,
         signIn,
         signOut,
       }}
