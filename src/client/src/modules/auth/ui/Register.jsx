@@ -11,6 +11,7 @@ import LoadingState from "../../../shared/ui/LoadingState";
 
 import loginStyles from "./Login.module.css";
 import styles from "./Register.module.css";
+import ErrorBanner from "../../../shared/ui/ErrorBanner";
 
 const initialValues = {
   firstName: "",
@@ -22,14 +23,18 @@ const initialValues = {
 
 // Registration UI preview until requester provisioning is available.
 export default function Register() {
-  const { user, loading } = useAuth();
+  const { user, loading, signUp, isSupabaseConfigured } = useAuth();
 
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
-  const [validated, setValidated] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Clear errors when the requester edits a field.
   function updateField(field, value) {
     setValues((current) => ({
       ...current,
@@ -41,23 +46,68 @@ export default function Register() {
       [field]: "",
     }));
 
-    setValidated(false);
+    setServerError("");
+    setRegistered(false);
   }
 
-  function handleSubmit(event) {
+  // Validate and submit the requester account to Supabase Auth.
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationErrors = validateRegistration(values);
+    if (submitting || registered) return;
 
+    setServerError("");
+
+    const validationErrors = validateRegistration(values);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      setValidated(false);
       return;
     }
 
-    // Do not create Auth users before requester provisioning is ready.
-    setValidated(true);
+    setSubmitting(true);
+
+    try {
+      const data = await signUp({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+      });
+
+      if (!data?.user) {
+        throw new Error("Registration did not return a user.");
+      }
+
+      // Clear passwords after the registration response.
+      setValues((current) => ({
+        ...current,
+        password: "",
+        confirmPassword: "",
+      }));
+
+      // With email confirmation enabled, no session is issued yet.
+      // Without confirmation, AuthProvider handles the new session.
+      setRegistered(true);
+    } catch (error) {
+      // Never expose database or trigger internals to the requester.
+      const rateLimited =
+        error?.status === 429 || error?.code === "over_email_send_rate_limit";
+
+      setServerError(
+        rateLimited
+          ? "Too many registration attempts. Please wait before trying again."
+          : "Unable to complete registration. Check your details and try again. If the problem continues, contact support.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <ErrorBanner message="Registration is temporarily unavailable. Supabase is not configured." />
+    );
   }
 
   if (loading) {
@@ -65,7 +115,7 @@ export default function Register() {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -76,13 +126,9 @@ export default function Register() {
             <ShieldCheck size={32} aria-hidden="true" />
           </div>
 
-          <h1 className={loginStyles.brandTitle}>
-            CivicConnect
-          </h1>
+          <h1 className={loginStyles.brandTitle}>CivicConnect</h1>
 
-          <p className={loginStyles.brandSubtitle}>
-            CITIZEN SERVICE PORTAL
-          </p>
+          <p className={loginStyles.brandSubtitle}>CITIZEN SERVICE PORTAL</p>
 
           <p className={loginStyles.brandDescription}>
             Connecting communities with municipal services.
@@ -94,28 +140,19 @@ export default function Register() {
           aria-labelledby="register-title"
         >
           <div className={loginStyles.panelHeading}>
-            <h2 id="register-title">
-              Create an Account
-            </h2>
+            <h2 id="register-title">Create an Account</h2>
 
             <p>
-              Enter your details to prepare your
-              CivicConnect requester account.
+              Enter your details to create your CivicConnect requester account.
             </p>
           </div>
 
-          <div className={styles.notice} role="note">
-            Registration is not available yet.
-            You can preview the form and validate
-            your details while account creation
-            is being finalised.
-          </div>
+          <ErrorBanner
+            message={serverError}
+            onDismiss={() => setServerError("")}
+          />
 
-          <form
-            className={styles.form}
-            onSubmit={handleSubmit}
-            noValidate
-          >
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <FormField
               label="First Name"
               name="first-name"
@@ -123,9 +160,8 @@ export default function Register() {
               placeholder="Enter your first name"
               value={values.firstName}
               error={errors.firstName}
-              onChange={(event) =>
-                updateField("firstName", event.target.value)
-              }
+              disabled={submitting || registered}
+              onChange={(event) => updateField("firstName", event.target.value)}
               required
             />
 
@@ -136,9 +172,8 @@ export default function Register() {
               placeholder="Enter your last name"
               value={values.lastName}
               error={errors.lastName}
-              onChange={(event) =>
-                updateField("lastName", event.target.value)
-              }
+              disabled={submitting || registered}
+              onChange={(event) => updateField("lastName", event.target.value)}
               required
             />
 
@@ -150,17 +185,13 @@ export default function Register() {
               placeholder="Enter your email address"
               value={values.email}
               error={errors.email}
-              onChange={(event) =>
-                updateField("email", event.target.value)
-              }
+              disabled={submitting || registered}
+              onChange={(event) => updateField("email", event.target.value)}
               required
             />
 
             <div className={styles.passwordField}>
-              <label
-                htmlFor="register-password"
-                className={styles.fieldLabel}
-              >
+              <label htmlFor="register-password" className={styles.fieldLabel}>
                 Password <span aria-hidden="true">*</span>
               </label>
 
@@ -173,6 +204,7 @@ export default function Register() {
                   autoComplete="new-password"
                   placeholder="Create a password"
                   value={values.password}
+                  disabled={submitting || registered}
                   onChange={(event) =>
                     updateField("password", event.target.value)
                   }
@@ -188,14 +220,9 @@ export default function Register() {
                 <button
                   type="button"
                   className={styles.visibilityButton}
-                  onClick={() =>
-                    setShowPassword((visible) => !visible)
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  disabled={submitting || registered}
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
                 >
                   {showPassword ? (
@@ -207,17 +234,11 @@ export default function Register() {
               </div>
 
               {errors.password ? (
-                <p
-                  id="register-password-error"
-                  className={styles.fieldError}
-                >
+                <p id="register-password-error" className={styles.fieldError}>
                   {errors.password}
                 </p>
               ) : (
-                <p
-                  id="register-password-help"
-                  className={styles.fieldHelp}
-                >
+                <p id="register-password-help" className={styles.fieldHelp}>
                   Use at least 8 characters.
                 </p>
               )}
@@ -240,11 +261,9 @@ export default function Register() {
                   autoComplete="new-password"
                   placeholder="Confirm your password"
                   value={values.confirmPassword}
+                  disabled={submitting || registered}
                   onChange={(event) =>
-                    updateField(
-                      "confirmPassword",
-                      event.target.value
-                    )
+                    updateField("confirmPassword", event.target.value)
                   }
                   aria-invalid={Boolean(errors.confirmPassword)}
                   aria-describedby={
@@ -258,9 +277,8 @@ export default function Register() {
                 <button
                   type="button"
                   className={styles.visibilityButton}
-                  onClick={() =>
-                    setShowConfirmation((visible) => !visible)
-                  }
+                  disabled={submitting || registered}
+                  onClick={() => setShowConfirmation((visible) => !visible)}
                   aria-label={
                     showConfirmation
                       ? "Hide confirmation password"
@@ -277,32 +295,40 @@ export default function Register() {
               </div>
 
               {errors.confirmPassword && (
-                <p
-                  id="register-confirm-error"
-                  className={styles.fieldError}
-                >
+                <p id="register-confirm-error" className={styles.fieldError}>
                   {errors.confirmPassword}
                 </p>
               )}
             </div>
-
-            {validated && (
+            {registered && (
               <div className={styles.successNotice} role="status">
-                Your details passed frontend validation.
-                No account has been created yet.
+                <strong>Registration submitted successfully!</strong>
+
+                <p>
+                  Please check your email for a verification link. Once you've
+                  confirmed your email address, your CivicConnect requester
+                  account will be activated.
+                </p>
+
+                <p>
+                  After confirming your email, you can sign in and start
+                  submitting service requests.
+                </p>
               </div>
             )}
 
-            <Button type="submit" fullWidth>
-              Check Registration Details
+            <Button
+              type="submit"
+              fullWidth
+              loading={submitting}
+              disabled={submitting || registered}
+            >
+              {submitting ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
           <p className={styles.signInText}>
-            Already have an account?{" "}
-            <Link to="/login">
-              Sign In
-            </Link>
+            Already have an account? <Link to="/login">Sign In</Link>
           </p>
         </section>
       </div>

@@ -2,13 +2,15 @@ import { useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { X } from "lucide-react";
 
-import { requesterNavigation } from "./navigation";
 import styles from "./AppLayout.module.css";
-import {LogoutButton} from "../../modules/auth";
+import { LogoutButton } from "../../modules/auth";
 
-
-
-export default function MobileMenu({ isOpen, onClose }) {
+export default function MobileMenu({
+  isOpen,
+  onClose,
+  navigation,
+  portal = "requester",
+}) {
   const menuRef = useRef(null);
   const closeButtonRef = useRef(null);
 
@@ -30,7 +32,7 @@ export default function MobileMenu({ isOpen, onClose }) {
       // Keep keyboard focus inside the open drawer.
       if (event.key === "Tab") {
         const elements = menuRef.current?.querySelectorAll(
-          'a[href], button:not([disabled])'
+          "a[href], button:not([disabled])",
         );
 
         if (!elements?.length) return;
@@ -41,10 +43,7 @@ export default function MobileMenu({ isOpen, onClose }) {
         if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last.focus();
-        } else if (
-          !event.shiftKey &&
-          document.activeElement === last
-        ) {
+        } else if (!event.shiftKey && document.activeElement === last) {
           event.preventDefault();
           first.focus();
         }
@@ -96,9 +95,13 @@ export default function MobileMenu({ isOpen, onClose }) {
 
         <nav
           className={styles.mobileNavigation}
-          aria-label="Mobile requester navigation"
+          aria-label={
+            portal === "staff"
+              ? "Mobile staff navigation"
+              : "Mobile requester navigation"
+          }
         >
-          {requesterNavigation.map(({ label, path, icon: Icon }) => (
+          {navigation.map(({ label, path, icon: Icon }) => (
             <NavLink
               key={path}
               to={path}

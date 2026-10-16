@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 import { useAuth } from "../session/useAuth";
@@ -15,7 +15,6 @@ export default function Login() {
   const { user, loading, signIn, isSupabaseConfigured, sessionExpired } = useAuth();
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,13 +22,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const requestedPath = location.state?.from?.pathname;
-
-  const destination =
-    requestedPath &&
-    !["/login", "/register", "/unauthorised"].includes(requestedPath)
-      ? requestedPath
-      : "/dashboard";
+  const destination = "/";
 
 
   if (!isSupabaseConfigured) {

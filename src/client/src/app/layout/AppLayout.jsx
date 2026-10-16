@@ -1,14 +1,15 @@
 import NotificationBell from "./NotificationBell";
 import { useCallback, useEffect, useState } from "react";
-import {
-  NavLink,
-  Outlet,
-  useLocation,
-} from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 
 import MobileMenu from "./MobileMenu";
-import { requesterNavigation } from "./navigation";
+import {
+  requesterNavigation,
+  staffNavigation,
+  managerNavigation,
+  adminNavigation,
+} from "./navigation";
 import styles from "./AppLayout.module.css";
 import { LogoutButton } from "../../modules/auth";
 
@@ -20,10 +21,47 @@ const pageTitles = {
   "/track": "Track Request",
   "/notifications": "Notifications",
   "/profile": "My Profile",
+  "/staff/dashboard": "Staff Dashboard",
+  "/staff/profile": "Staff Profile",
+  "/manager/dashboard": "Management Dashboard",
+  "/manager/profile": "Manager Profile",
+  "/admin/dashboard": "Admin Dashboard",
+  "/admin/profile": "Admin Profile",
+  "/manager/team": "Team Overview",
+"/admin/team": "Staff Directory",
+"/manager/assignments": "Assignment Management",
+"/admin/assignments": "Assignment Management",
+"/manager/reports": "Service Delivery Reports",
+"/admin/reports": "Service Delivery Reports",
+"/admin/staff/add": "Add Staff Member",
 };
 
-export default function AppLayout() {
+export default function AppLayout({ portal = "requester" }) {
   const { pathname } = useLocation();
+
+
+  // Shared layout with role-specific navigation and home destinations.
+  const portalConfiguration = {
+    requester: {
+      navigation: requesterNavigation,
+      homePath: "/dashboard",
+    },
+    staff: {
+      navigation: staffNavigation,
+      homePath: "/staff/dashboard",
+    },
+    manager: {
+      navigation: managerNavigation,
+      homePath: "/manager/dashboard",
+    },
+    admin: {
+      navigation: adminNavigation,
+      homePath: "/admin/dashboard",
+    },
+  };
+
+  const { navigation, homePath } =
+    portalConfiguration[portal] ?? portalConfiguration.requester;
 
   // Remember which route opened the navigation drawer.
   const [menuRoute, setMenuRoute] = useState(null);
@@ -56,23 +94,34 @@ export default function AppLayout() {
   }, [closeMenu]);
 
   const pageTitle =
-    pathname.startsWith("/requests/") && pathname !== "/requests/new"
-      ? "Request Details"
-      : pageTitles[pathname] || "CivicConnect";
+  pathname.startsWith("/manager/requests/") ||
+  pathname.startsWith("/admin/requests/")
+    ? "Request Details"
+    : pathname.startsWith("/manager/team/") ||
+        pathname.startsWith("/admin/team/")
+      ? "Staff Details"
+      : pathname.startsWith("/staff/requests/")
+        ? "Manage Request"
+        : pathname.startsWith("/requests/") &&
+            pathname !== "/requests/new"
+          ? "Request Details"
+          : pageTitles[pathname] || "CivicConnect";
 
   return (
     <div className={styles.appShell}>
       {/* Permanent desktop navigation */}
       <aside className={styles.sidebar}>
-        <NavLink to="/dashboard" className={styles.brand}>
+        <NavLink to={homePath} className={styles.brand}>
           CivicConnect
         </NavLink>
 
         <nav
           className={styles.desktopNavigation}
-          aria-label="Desktop requester navigation"
+          aria-label={
+            `${portal} navigation`
+          }
         >
-          {requesterNavigation.map(({ label, path, icon: Icon }) => (
+          {navigation.map(({ label, path, icon: Icon }) => (
             <NavLink
               key={path}
               to={path}
@@ -114,7 +163,7 @@ export default function AppLayout() {
             </div>
           </div>
 
-          <NotificationBell />
+          <NotificationBell portal={portal} />
         </header>
 
         {/* Each page supplies its own h1 via PageHeader */}
@@ -123,7 +172,12 @@ export default function AppLayout() {
         </main>
       </div>
 
-      <MobileMenu isOpen={menuOpen} onClose={closeMenu} />
+      <MobileMenu
+        isOpen={menuOpen}
+        onClose={closeMenu}
+        navigation={navigation}
+        portal={portal}
+      />
     </div>
   );
 }

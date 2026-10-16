@@ -1,12 +1,18 @@
-import {createAssignmentService} from './service/createAssignmentService.js';
-import {createTeamService} from './service/Teamservice.js';
-import {createSupabaseWorkflowRepository} from './repository/supabaseWorkRepository.js';
+import { createAssignmentService } from "./service/createAssignmentService.js";
+import { createTeamService } from "./service/Teamservice.js";
+import { createSupabaseWorkflowRepository } from "./repository/createSupabaseWorkflowRepository.js";
 
+// Compose the existing repository and services for management pages.
 export function createWorkflowModule({
-    supabase, repository = createSupabaseWorkflowRepository({supabase})
-}){
-    return {    
-    assignment: createAssignmentService({repository}), 
-    team: createTeamService({repository})}
+  repository = createSupabaseWorkflowRepository(),
+} = {}) {
+  return {
+    assignment: createAssignmentService({ repository }),
+    team: createTeamService({ repository }),
+  };
 }
-export {permissionFor, STAFF_ROLES} from './permission.js';
+
+export {
+  permissionsFor,
+  STAFF_ROLES,
+} from "./permissions.js";

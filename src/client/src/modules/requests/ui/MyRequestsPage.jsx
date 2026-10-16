@@ -13,6 +13,7 @@ import StatusBadge from "../../../shared/ui/StatusBadge";
 import { listMyServiceRequests } from "../service/requestService";
 
 import styles from "./MyRequestsPage.module.css";
+import {useAuth} from "../../auth";
 
 const STATUSES = [
   "Submitted",
@@ -70,6 +71,11 @@ function getErrorMessage(error) {
 
 // Requester-facing page for browsing submitted service requests.
 export default function MyRequestsPage() {
+
+  const { access } = useAuth();
+  // Get the signed-in user's first name.
+const firstName = access?.requester?.first_name?.trim() || "Requester";
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -175,7 +181,7 @@ export default function MyRequestsPage() {
   return (
     <section className={styles.page}>
       <PageHeader
-        title="Dashboard"
+        title={`Welcome Back, ${firstName}!`}
         description="Manage and track your municipal service requests."
         action={
           <Link to="/requests/new" className={styles.newRequest}>

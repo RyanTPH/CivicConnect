@@ -6,7 +6,7 @@ import Button from "../../../shared/ui/Button";
 import Card from "../../../shared/ui/Card";
 import ErrorBanner from "../../../shared/ui/ErrorBanner";
 import FormField from "../../../shared/ui/FormField";
-import PageHeader from "../../../shared/ui/PageHeader";
+
 
 import { createServiceRequest } from "../service/requestService";
 import { saveServiceRequest } from "../repository/supabaseRequestRepository";
@@ -139,10 +139,6 @@ export default function RequestForm() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="File a Complaint"
-        description="Report a municipal service issue by completing the form below."
-      />
 
       <div className={styles.content}>
         {savedRequest ? (
