@@ -1,0 +1,90 @@
+/* Shared requester/staff comment composer. */
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.form > label:first-child {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 100px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.form textarea:focus-visible,
+.form input:focus-visible,
+.submitButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.checkboxLabel input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+}
+
+.submitButton {
+  justify-self: start;
+  min-height: var(--touch-target-min, 44px);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: white;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.submitButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error,
+.success {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.error {
+  color: var(--color-danger, #b42318);
+}
+
+.success {
+  color: var(--color-success, #147d46);
+}

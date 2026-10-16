@@ -142,6 +142,16 @@ export default function AssignmentManagementPage({ portal = "manager" }) {
   const loading = data.key !== queryKey;
   const requests = loading ? [] : data.requests;
   const staff = loading ? [] : data.staff;
+  // Managers can select general staff or themselves.
+// Administrators retain the broader oversight assignment list.
+const eligibleStaff =
+  access?.staffRole === "manager"
+    ? staff.filter(
+        (member) =>
+          member.role === "staff" ||
+          member.staffId === access?.staff?.staff_id
+      )
+    : staff;
   const error = loading ? "" : data.error;
 
   function refresh() {
@@ -427,7 +437,7 @@ export default function AssignmentManagementPage({ portal = "manager" }) {
                         >
                           <option value="">Select staff member</option>
 
-                          {staff.map((member) => (
+                          {eligibleStaff.map((member) => (
                             <option key={member.staffId} value={member.staffId}>
                               {[member.firstName, member.lastName]
                                 .filter(Boolean)

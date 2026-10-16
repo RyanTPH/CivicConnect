@@ -229,6 +229,16 @@ export default function App() {
   }
 />
 
+<Route
+  path="/manager/my-requests"
+  element={<StaffDashboardPage portal="manager" />}
+/>
+
+<Route
+  path="/manager/my-requests/:requestId"
+  element={<StaffRequestPage portal="manager" />}
+/>
+
 
   </Route>
 
