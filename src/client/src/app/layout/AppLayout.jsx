@@ -28,17 +28,17 @@ const pageTitles = {
   "/admin/dashboard": "Admin Dashboard",
   "/admin/profile": "Admin Profile",
   "/manager/team": "Team Overview",
-"/admin/team": "Staff Directory",
-"/manager/assignments": "Assignment Management",
-"/admin/assignments": "Assignment Management",
-"/manager/reports": "Service Delivery Reports",
-"/admin/reports": "Service Delivery Reports",
-"/admin/staff/add": "Add Staff Member",
+  "/admin/team": "Staff Directory",
+  "/manager/assignments": "Assignment Management",
+  "/admin/assignments": "Assignment Management",
+  "/manager/reports": "Service Delivery Reports",
+  "/admin/reports": "Service Delivery Reports",
+  "/admin/staff/add": "Add Staff Member",
+  "/manager/my-requests": "My Assigned Requests",
 };
 
 export default function AppLayout({ portal = "requester" }) {
   const { pathname } = useLocation();
-
 
   // Shared layout with role-specific navigation and home destinations.
   const portalConfiguration = {
@@ -94,18 +94,18 @@ export default function AppLayout({ portal = "requester" }) {
   }, [closeMenu]);
 
   const pageTitle =
-  pathname.startsWith("/manager/requests/") ||
-  pathname.startsWith("/admin/requests/")
-    ? "Request Details"
-    : pathname.startsWith("/manager/team/") ||
-        pathname.startsWith("/admin/team/")
-      ? "Staff Details"
-      : pathname.startsWith("/staff/requests/")
-        ? "Manage Request"
-        : pathname.startsWith("/requests/") &&
-            pathname !== "/requests/new"
-          ? "Request Details"
-          : pageTitles[pathname] || "CivicConnect";
+    pathname.startsWith("/manager/my-requests/") ||
+    pathname.startsWith("/staff/requests/")
+      ? "Manage Request"
+      : pathname.startsWith("/manager/requests/") ||
+          pathname.startsWith("/admin/requests/")
+        ? "Request Details"
+        : pathname.startsWith("/manager/team/") ||
+            pathname.startsWith("/admin/team/")
+          ? "Staff Details"
+          : pathname.startsWith("/requests/") && pathname !== "/requests/new"
+            ? "Request Details"
+            : pageTitles[pathname] || "CivicConnect";
 
   return (
     <div className={styles.appShell}>
@@ -117,9 +117,7 @@ export default function AppLayout({ portal = "requester" }) {
 
         <nav
           className={styles.desktopNavigation}
-          aria-label={
-            `${portal} navigation`
-          }
+          aria-label={`${portal} navigation`}
         >
           {navigation.map(({ label, path, icon: Icon }) => (
             <NavLink

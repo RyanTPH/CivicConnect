@@ -17,6 +17,7 @@ const EVENT_TITLES = {
   updated: "Request Updated",
   resolved: "Request Resolved",
   closed: "Request Closed",
+  comment_added: "New Comment",
 };
 
 function formatDate(value) {
@@ -39,6 +40,10 @@ function getTitle(notification) {
 }
 
 function getMessage(notification) {
+  if (notification.event_type === "comment_added") {
+    return "A new comment has been added to a service request.";
+  }
+
   if (notification.status_snapshot) {
     return `Your service request status is now ${notification.status_snapshot}.`;
   }
@@ -232,7 +237,12 @@ export default function NotificationBell({ portal = "requester" }) {
   function openRelatedRequest(notification) {
     if (!notification.service_request_id) return;
 
-    const basePath = portal === "staff" ? "/staff/requests" : "/requests";
+    const basePath = {
+  requester: "/requests",
+  staff: "/staff/requests",
+  manager: "/manager/my-requests",
+  admin: "/admin/requests",
+}[portal] ?? "/requests";
 
     const requestPath = `${basePath}/${encodeURIComponent(
       notification.service_request_id,
@@ -351,18 +361,22 @@ export default function NotificationBell({ portal = "requester" }) {
               <p>{getMessage(selectedNotification)}</p>
 
               <dl className={styles.metadata}>
-                <div>
-                  <dt>Status</dt>
-                  <dd>
-                    {selectedNotification.status_snapshot ?? "Not available"}
-                  </dd>
-                </div>
+  {selectedNotification.event_type !== "comment_added" && (
+    <div>
+      <dt>Status</dt>
+      <dd>
+        {selectedNotification.status_snapshot ?? "Not available"}
+      </dd>
+    </div>
+  )}
 
-                <div>
-                  <dt>Received</dt>
-                  <dd>{formatDate(selectedNotification.created_at)}</dd>
-                </div>
-              </dl>
+  <div>
+    <dt>Received</dt>
+    <dd>
+      {formatDate(selectedNotification.created_at)}
+    </dd>
+  </div>
+</dl>
 
               {selectedNotification.service_request_id && (
                 <button

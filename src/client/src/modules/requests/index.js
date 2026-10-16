@@ -7,19 +7,19 @@ export {
   default as RequestDetailsPage,
 } from "./ui/RequestDetailsPage";
 
+
+
 export {
   getStaffRequests,
-} from "./repository/supabaseStaffRequestRepository";
-
-export {
   getStaffRequestDetails,
-} from "./repository/supabaseStaffRequestRepository";
-
-
-export {
   assignStaffRequest,
+  getMyAssignedStaffRequests,
 } from "./repository/supabaseStaffRequestRepository";
 
 export {
   updateRequestStatus,
 } from "./service/requestStatusService";
+
+export {
+  createRequestComment,
+} from "./repository/supabaseCommentRepository";
