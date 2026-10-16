@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, ClipboardList, Clock3, Search } from "lucide-react";
 
 import { useAuth } from "../../auth";
-import { getStaffRequests } from "../../requests";
+import { getStaffRequests, getMyAssignedStaffRequests, } from "../../requests";
 
 import Card from "../../../shared/ui/Card";
 import Button from "../../../shared/ui/Button";
@@ -53,9 +53,15 @@ function formatDate(value) {
 }
 
 // Staff work queue using the existing RLS-protected request query.
-export default function StaffDashboardPage() {
+export default function StaffDashboardPage({portal = "staff",}) {
   const { access } = useAuth();
   const staffId = access?.staff?.staff_id;
+
+  const isManagerQueue = portal === "manager";
+
+const detailsBasePath = isManagerQueue
+  ? "/manager/my-requests"
+  : "/staff/requests";
 
   // Get the signed-in staff member's first name.
 const firstName = access?.staff?.first_name?.trim() || "Staff";
@@ -79,7 +85,9 @@ const firstName = access?.staff?.first_name?.trim() || "Staff";
 
       try {
         // RLS determines the staff member's visible requests.
-        const result = await getStaffRequests();
+        const result = isManagerQueue
+  ? await getMyAssignedStaffRequests()
+  : await getStaffRequests();
 
         if (!cancelled) {
           setRequests(result);
@@ -103,7 +111,7 @@ const firstName = access?.staff?.first_name?.trim() || "Staff";
     return () => {
       cancelled = true;
     };
-  }, [staffId, reloadKey]);
+  }, [staffId, reloadKey, isManagerQueue]);
 
   const summary = useMemo(() => {
     // "Assigned" counts only requests assigned to this staff member.
@@ -150,9 +158,17 @@ const firstName = access?.staff?.first_name?.trim() || "Staff";
   return (
     <section className={styles.page}>
       <PageHeader
-        title={`Welcome Back, ${firstName}!`}
-        description="Review and manage your municipal service requests."
-      />
+  title={
+    isManagerQueue
+      ? "My Assigned Requests"
+      : `Welcome Back, ${firstName}!`
+  }
+  description={
+    isManagerQueue
+      ? "Review and process service requests assigned to you."
+      : "Review and manage your municipal service requests."
+  }
+/>
 
       {!staffId ? (
         <Card>
@@ -315,13 +331,13 @@ const firstName = access?.staff?.first_name?.trim() || "Staff";
                         </span>
 
                         <Link
-                          to={`/staff/requests/${encodeURIComponent(
-                            request.service_request_id,
-                          )}`}
-                          className={styles.manageLink}
-                        >
-                          View / Manage →
-                        </Link>
+  to={`${detailsBasePath}/${encodeURIComponent(
+    request.service_request_id
+  )}`}
+  className={styles.manageLink}
+>
+  View / Manage →
+</Link>
                       </div>
                     </article>
                   </Card>
