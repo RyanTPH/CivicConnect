@@ -182,3 +182,47 @@ export async function getStaffRequestDetails(requestId) {
   };
 }
 
+
+// Retrieve only the current staff identity's assignments.
+// Managers use this for their personal work queue.
+export async function getMyAssignedStaffRequests() {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data: auth, error: authError } =
+    await supabase.auth.getUser();
+
+  if (authError || !auth?.user) {
+    throw new Error("Please sign in to view assigned requests.");
+  }
+
+  const { data: staff, error: staffError } = await supabase
+    .from("staff")
+    .select("staff_id")
+    .eq("user_id", auth.user.id)
+    .eq("is_active", true)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (staffError || !staff) {
+    throw new Error("An active staff profile is required.");
+  }
+
+  // Filter by the signed-in user's staff ID at the database.
+  // Existing RLS still applies to the query.
+  const { data, error } = await supabase
+    .from("service_requests")
+    .select("*")
+    .eq("assigned_staff_id", staff.staff_id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(
+      "Unable to load your assigned requests."
+    );
+  }
+
+  return data ?? [];
+}
+
