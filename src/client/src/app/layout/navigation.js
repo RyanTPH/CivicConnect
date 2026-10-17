@@ -7,6 +7,7 @@
   UsersRound,
   ClipboardList,
   UserPlus,
+  ClipboardCheck,
 } from "lucide-react";
 
 // Requester navigation shared by desktop and mobile layouts.
@@ -50,6 +51,11 @@ export const managerNavigation = [
     path: "/manager/dashboard",
     icon: ShieldCheck,
   },
+  {
+  label: "My Assigned Requests",
+  path: "/manager/my-requests",
+  icon: ClipboardCheck,
+},
   {
   label: "Team Overview",
   path: "/manager/team",

@@ -15,6 +15,7 @@ import PageHeader from "../../../shared/ui/PageHeader";
 import StatusBadge from "../../../shared/ui/StatusBadge";
 
 import { getMyServiceRequestDetails } from "../service/requestService";
+import RequestCommentForm from "./RequestCommentForm";
 
 import styles from "./RequestDetailsPage.module.css";
 
@@ -137,9 +138,7 @@ export default function RequestDetailsPage() {
                   Complaint Description
                 </h2>
 
-                <p className={styles.description}>
-                  {request.description}
-                </p>
+                <p className={styles.description}>{request.description}</p>
 
                 {request.resolution_summary && (
                   <div className={styles.resolution}>
@@ -179,15 +178,11 @@ export default function RequestDetailsPage() {
                           <div className={styles.timelineHeading}>
                             <StatusBadge status={entry.to_status} />
 
-                            <time>
-                              {formatDate(entry.changed_at)}
-                            </time>
+                            <time>{formatDate(entry.changed_at)}</time>
                           </div>
 
                           {entry.note && (
-                            <p className={styles.timelineNote}>
-                              {entry.note}
-                            </p>
+                            <p className={styles.timelineNote}>{entry.note}</p>
                           )}
                         </div>
                       </li>
@@ -218,26 +213,24 @@ export default function RequestDetailsPage() {
                         className={styles.comment}
                       >
                         <p>{comment.comment_text}</p>
-                        <time>
-                          {formatDate(comment.date_created)}
-                        </time>
+                        <time>{formatDate(comment.date_created)}</time>
                       </article>
                     ))}
                   </div>
                 )}
 
-                <p className={styles.commentNotice}>
-                  Comment submission will be available after
-                  its permissions and integration are verified.
-                </p>
+                <RequestCommentForm
+                  key={request.service_request_id}
+                  requestId={request.service_request_id}
+                  disabled={details.commentsUnavailable}
+                  onCommentAdded={() => setReloadKey((current) => current + 1)}
+                />
               </Card>
             </div>
 
             <aside className={styles.sidebar}>
               <Card>
-                <h2 className={styles.sectionTitle}>
-                  Request Summary
-                </h2>
+                <h2 className={styles.sectionTitle}>Request Summary</h2>
 
                 <dl className={styles.summary}>
                   <div>
@@ -262,10 +255,7 @@ export default function RequestDetailsPage() {
 
                   <div>
                     <dt>
-                      <CalendarDays
-                        size={15}
-                        aria-hidden="true"
-                      />
+                      <CalendarDays size={15} aria-hidden="true" />
                       Created
                     </dt>
                     <dd>{formatDate(request.created_at)}</dd>
@@ -292,10 +282,7 @@ export default function RequestDetailsPage() {
                 </dl>
               </Card>
 
-              <Link
-                to="/requests/new"
-                className={styles.newRequestLink}
-              >
+              <Link to="/requests/new" className={styles.newRequestLink}>
                 File Another Complaint
               </Link>
             </aside>
