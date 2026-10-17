@@ -1,2 +1,3 @@
 m2_create_issue.sh
 create_civicconnect_m3_issues.sh
+check_duplicate_issues.sh
