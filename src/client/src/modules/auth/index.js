@@ -7,6 +7,7 @@ export { useIsAdmin } from "./service/useIsadmin.js"
 export {
     addStaffMember,
     AddStaffError,
+    resendStaffSetup,
     STAFF_ROLES,
 
 } from "./service/Addstaffmember.js"
