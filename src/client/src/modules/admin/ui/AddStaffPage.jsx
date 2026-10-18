@@ -5,7 +5,7 @@ import { ArrowLeft, UserPlus } from "lucide-react";
 import {
   useAuth,
   addStaffMember,
-  resendStaffSetup,
+  
   STAFF_ROLES,
 } from "../../auth";
 
