@@ -330,6 +330,10 @@ export default function ManagementRequestDetailsPage({
                   </div>
                 )}
 
+                <p className={styles.muted}>
+                  Comment submission uses the separate
+                  requester/staff workflow.
+                </p>
               </Card>
             </div>
 
