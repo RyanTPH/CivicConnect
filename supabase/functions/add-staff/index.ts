@@ -141,6 +141,7 @@ Deno.serve(async (req) => {
   } catch {
     return json({ error: 'Invalid JSON body' }, 400)
   }
+<<<<<<< HEAD
 
 
    // Resend account setup without creating another staff record.
@@ -250,6 +251,8 @@ Deno.serve(async (req) => {
   }
 
 
+=======
+>>>>>>> f62d35da1e8baa3e35756a169b70365049b09b29
   const { data: input, errors } = validate(raw)
   // 422 + a `fields` object lets the form show each message by its input.
   if (!input) return json({ error: 'Validation failed', fields: errors }, 422)
@@ -285,6 +288,7 @@ Deno.serve(async (req) => {
   if (existing) {
     // The login exists already, so reuse it.
     userId = existing.id
+<<<<<<< HEAD
 
     // Existing staff must use the explicit recovery action.
     // Do not send another invitation during Add Staff.
@@ -310,6 +314,8 @@ Deno.serve(async (req) => {
     }
 
 
+=======
+>>>>>>> f62d35da1e8baa3e35756a169b70365049b09b29
     // They never confirmed their email, so they never accepted an invite:
     // try to send a fresh one. Best effort: how Supabase handles re-invites
     // can vary, so a failure here doesn't stop the staff row being created.
