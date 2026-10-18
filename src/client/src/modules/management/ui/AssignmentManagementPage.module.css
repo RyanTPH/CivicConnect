@@ -1,0 +1,211 @@
+/* Responsive assignment management page. */
+
+.page {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.filters label,
+.editor label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.filters select,
+.editor select,
+.editor textarea {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.filters select,
+.editor select {
+  min-height: var(--touch-target-min);
+}
+
+.editor textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.requestList {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.requestCard {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.requestTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.requestTop h2 {
+  margin: var(--space-2) 0;
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  overflow-wrap: anywhere;
+}
+
+.reference,
+.muted,
+.metadata {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.muted {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.metadata {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.metadata p {
+  margin: 0;
+}
+
+.metadata strong {
+  color: var(--color-text);
+}
+
+.overdue,
+.error {
+  color: var(--color-danger, #b42318);
+}
+
+.success {
+  color: var(--color-success, #147d46);
+  font-size: var(--font-size-sm);
+}
+
+.editor {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.editor fieldset {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.actions,
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: fit-content;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.secondaryButton {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.filters select:focus-visible,
+.editor select:focus-visible,
+.editor textarea:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.pagination {
+  justify-content: center;
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .filters {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) auto;
+    align-items: end;
+  }
+
+  .metadata {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+.detailsLink {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

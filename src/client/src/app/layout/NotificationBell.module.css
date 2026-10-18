@@ -1,0 +1,248 @@
+/* Header notification popup shared by requester and staff portals. */
+
+.container {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.bellButton {
+  position: relative;
+  cursor: pointer;
+}
+
+.count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 1100;
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(520px, calc(100dvh - 95px));
+  overflow-y: auto;
+  border: 1px solid var(--color-border, #d8e3f1);
+  border-radius: var(--radius-md, 12px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #102b4e);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
+}
+
+.heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border, #d8e3f1);
+  background: var(--color-surface, #fff);
+}
+
+.heading h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.headingLeft,
+.headingActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text, #102b4e);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-primary-light, #e7f0fb);
+}
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.list {
+  display: grid;
+}
+
+.item {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border, #d8e3f1);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #102b4e);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background: var(--color-primary-light, #e7f0fb);
+}
+
+.unread {
+  background: #f0f6ff;
+}
+
+.itemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.itemTop strong {
+  font-size: 0.9rem;
+}
+
+.unreadDot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-primary, #1964bf);
+}
+
+.itemMessage {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.date {
+  color: var(--color-text-secondary, #5f728e);
+  font-size: 0.75rem;
+}
+
+.message,
+.error {
+  margin: 0;
+  padding: 20px 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.message {
+  color: var(--color-text-secondary, #5f728e);
+}
+
+.error {
+  color: #b42318;
+}
+
+.details {
+  display: grid;
+  gap: 16px;
+  padding: 20px 16px;
+}
+
+.details h3,
+.details p {
+  margin: 0;
+}
+
+.details h3 {
+  font-size: 1.1rem;
+}
+
+.details p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.metadata {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.metadata > div {
+  display: grid;
+  gap: 4px;
+}
+
+.metadata dt {
+  color: var(--color-text-secondary, #5f728e);
+  font-size: 0.8rem;
+}
+
+.metadata dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.viewRequest {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-primary, #1964bf);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.viewRequest:hover {
+  background: var(--color-primary-hover, #1455a3);
+}
+
+.iconButton:focus-visible,
+.item:focus-visible,
+.viewRequest:focus-visible,
+.bellButton:focus-visible {
+  outline: 2px solid var(--color-primary, #1964bf);
+  outline-offset: 2px;
+}
+
+/* Fit the popup safely inside smaller mobile viewports. */
+@media (max-width: 600px) {
+  .panel {
+    position: fixed;
+    top: 70px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100dvh - 85px);
+  }
+}
