@@ -5,6 +5,7 @@ import { ArrowLeft, UserPlus } from "lucide-react";
 import {
   useAuth,
   addStaffMember,
+  resendStaffSetup,
   STAFF_ROLES,
 } from "../../auth";
 
@@ -28,28 +29,17 @@ const EMPTY_FORM = {
 function validateStaff(values) {
   const errors = {};
 
-  if (
-    !values.firstName.trim() ||
-    values.firstName.trim().length > 100
-  ) {
-    errors.firstName =
-      "Enter a first name (maximum 100 characters).";
+  if (!values.firstName.trim() || values.firstName.trim().length > 100) {
+    errors.firstName = "Enter a first name (maximum 100 characters).";
   }
 
-  if (
-    !values.lastName.trim() ||
-    values.lastName.trim().length > 100
-  ) {
-    errors.lastName =
-      "Enter a last name (maximum 100 characters).";
+  if (!values.lastName.trim() || values.lastName.trim().length > 100) {
+    errors.lastName = "Enter a last name (maximum 100 characters).";
   }
 
   const email = values.email.trim();
 
-  if (
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-    email.length > 254
-  ) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
     errors.email = "Enter a valid email address.";
   }
 
@@ -58,8 +48,7 @@ function validateStaff(values) {
   }
 
   if (values.department.trim().length > 100) {
-    errors.department =
-      "Department must be 100 characters or fewer.";
+    errors.department = "Department must be 100 characters or fewer.";
   }
 
   return errors;
@@ -73,13 +62,11 @@ export default function AddStaffPage() {
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [setupMessage, setSetupMessage] = useState("");
 
-  const isAdmin =
-    access?.isStaff && access?.staffRole === "admin";
+  const isAdmin = access?.isStaff && access?.staffRole === "admin";
 
-  const selectedRole = STAFF_ROLES.find(
-    (role) => role.value === values.role
-  );
+  const selectedRole = STAFF_ROLES.find((role) => role.value === values.role);
 
   function updateField(field, value) {
     setValues((current) => ({
@@ -123,9 +110,7 @@ export default function AddStaffPage() {
       const result = await addStaffMember(input);
 
       if (!result?.staff_id) {
-        throw new Error(
-          "The server did not confirm staff creation."
-        );
+        throw new Error("The server did not confirm staff creation.");
       }
 
       setSuccess({
@@ -147,19 +132,46 @@ export default function AddStaffPage() {
       }
 
       setServerError(
-        error?.message ||
-          "Unable to add the staff member. Please try again."
+        error?.message || "Unable to add the staff member. Please try again.",
       );
     } finally {
       setSubmitting(false);
     }
   }
 
+  async function handleResendSetup() {
+  if (submitting || !isAdmin) return;
+
+  setServerError("");
+  setSetupMessage("");
+
+  const email = values.email.trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setServerError("Enter the existing staff member's email address.");
+    return;
+  }
+
+  setSubmitting(true);
+
+  try {
+    const result = await resendStaffSetup(email);
+
+    setSetupMessage(
+      result?.message ?? "A new setup email was requested.",
+    );
+  } catch (error) {
+    setServerError(
+      error?.message ?? "Unable to request a setup email.",
+    );
+  } finally {
+    setSubmitting(false);
+  }
+}
+
   if (!isAdmin) {
     return (
-      <ErrorBanner
-        message="Administrator access is required to add staff."
-      />
+      <ErrorBanner message="Administrator access is required to add staff." />
     );
   }
 
@@ -193,9 +205,7 @@ export default function AddStaffPage() {
               {success.email}
             </p>
 
-            <p className={styles.roleText}>
-              Role: {success.role}
-            </p>
+            <p className={styles.roleText}>Role: {success.role}</p>
 
             <p>
               {success.inviteSent
@@ -203,22 +213,14 @@ export default function AddStaffPage() {
                 : "The staff record was saved. No new invitation was confirmed; this person may already have a login."}
             </p>
 
-            <p className={styles.smallText}>
-              Staff ID: {success.staffId}
-            </p>
+            <p className={styles.smallText}>Staff ID: {success.staffId}</p>
 
             <div className={styles.successActions}>
-              <Button
-                variant="secondary"
-                onClick={() => setSuccess(null)}
-              >
+              <Button variant="secondary" onClick={() => setSuccess(null)}>
                 Add Another Staff Member
               </Button>
 
-              <Link
-                to="/admin/team"
-                className={styles.directoryLink}
-              >
+              <Link to="/admin/team" className={styles.directoryLink}>
                 View Staff Directory
               </Link>
             </div>
@@ -228,16 +230,10 @@ export default function AddStaffPage() {
 
       {!success && (
         <Card>
-          <form
-            className={styles.form}
-            onSubmit={handleSubmit}
-            noValidate
-          >
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <div className={styles.sectionHeading}>
               <h2>Personal Details</h2>
-              <p>
-                Enter the staff member's official contact details.
-              </p>
+              <p>Enter the staff member's official contact details.</p>
             </div>
 
             <div className={styles.twoColumns}>
@@ -275,9 +271,7 @@ export default function AddStaffPage() {
               name="email"
               type="email"
               value={values.email}
-              onChange={(event) =>
-                updateField("email", event.target.value)
-              }
+              onChange={(event) => updateField("email", event.target.value)}
               error={errors.email}
               autoComplete="off"
               maxLength={254}
@@ -290,8 +284,8 @@ export default function AddStaffPage() {
             <div className={styles.sectionHeading}>
               <h2>Staff Access</h2>
               <p>
-                The selected role determines the permissions
-                granted to this staff member.
+                The selected role determines the permissions granted to this
+                staff member.
               </p>
             </div>
 
@@ -302,18 +296,14 @@ export default function AddStaffPage() {
               value={values.role}
               options={STAFF_ROLES}
               placeholder="Select a role"
-              onChange={(event) =>
-                updateField("role", event.target.value)
-              }
+              onChange={(event) => updateField("role", event.target.value)}
               error={errors.role}
               disabled={submitting}
               required
             />
 
             {selectedRole && (
-              <p className={styles.roleHint}>
-                {selectedRole.hint}
-              </p>
+              <p className={styles.roleHint}>{selectedRole.hint}</p>
             )}
 
             <FormField
@@ -333,9 +323,9 @@ export default function AddStaffPage() {
             <div className={styles.notice}>
               <strong>Before submitting</strong>
               <p>
-                This action creates or links a staff account.
-                New users may receive an invitation email.
-                Verify the email address and role carefully.
+                This action creates or links a staff account. New users may
+                receive an invitation email. Verify the email address and role
+                carefully.
               </p>
             </div>
 
@@ -345,20 +335,24 @@ export default function AddStaffPage() {
             />
 
             <div className={styles.actions}>
-              <Button
-                type="submit"
-                loading={submitting}
-                disabled={submitting}
-              >
-                {submitting
-                  ? "Adding Staff Member..."
-                  : "Add Staff Member"}
+              <Button type="submit" loading={submitting} disabled={submitting}>
+                {submitting ? "Adding Staff Member..." : "Add Staff Member"}
               </Button>
 
-              <Link
-                to="/admin/team"
-                className={styles.cancelLink}
-              >
+              <div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={submitting}
+                  onClick={handleResendSetup}
+                >
+                  Send Setup / Recovery Email
+                </Button>
+
+                {setupMessage && <p role="status">{setupMessage}</p>}
+              </div>
+
+              <Link to="/admin/team" className={styles.cancelLink}>
                 Cancel
               </Link>
             </div>
