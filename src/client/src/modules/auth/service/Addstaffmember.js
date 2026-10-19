@@ -43,3 +43,29 @@ export async function addStaffMember(input) {
   }
   return data
 }
+
+// Request a new account setup email for existing staff.
+export async function resendStaffSetup(email) {
+  const { data, error } = await supabase.functions.invoke(
+    "add-staff",
+    {
+      body: {
+        action: "resend_setup",
+        email: email.trim().toLowerCase(),
+      },
+    },
+  );
+
+  if (error) {
+    const response = error.context;
+    const body = await response?.json?.().catch(() => null);
+
+    throw new AddStaffError(
+      body?.error ?? "Unable to request a setup email.",
+      response?.status,
+    );
+  }
+
+  return data;
+}
+
